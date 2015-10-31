@@ -56,7 +56,10 @@ public class Sensor
 		
 		while(current_time.isBefore(to)) 
 		{
-			Measurement current_measurement = SampleGenerator.getInstance().generateMeasurement(current_time, type);
+			System.out.println("Current time: "+current_time);
+			
+			Measurement current_measurement = SampleGenerator.getInstance().generateMeasurement(current_time, type);			
+			current_time = current_time.plusHours(1);
 		}
 	}
 }
