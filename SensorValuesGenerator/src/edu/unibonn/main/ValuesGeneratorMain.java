@@ -4,7 +4,10 @@ import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.ArrayList;
 
+import org.jfree.ui.RefineryUtilities;
+
 import edu.unibonn.main.Sensor.Cell_type;
+import edu.unibonn.plotting.TimeSeriesPlotter;
 
 public class ValuesGeneratorMain
 {
@@ -18,14 +21,16 @@ public class ValuesGeneratorMain
 		}
 		
 		new ValuesGeneratorMain().generateMesurements(sensors);
+		
+		
 	}
 	
 	private void generateMesurements(ArrayList<Sensor> sensors)
 	{
-		LocalDateTime from = LocalDateTime.of(2015, Month.OCTOBER, 25, 00, 00, 00);
+		LocalDateTime from = LocalDateTime.of(2015, Month.OCTOBER, 26, 00, 00, 00);
 		System.out.println("FROM:"+from);
 		
-		LocalDateTime to = LocalDateTime.of(2015, Month.OCTOBER, 26, 00, 00, 00);
+		LocalDateTime to = LocalDateTime.of(2015, Month.OCTOBER, 27, 00, 00, 00);
 		System.out.println("TO:"+to);
 		
 		for (int i = 0; (i+3) <= sensors.size() ; i=i+3) 
@@ -42,5 +47,11 @@ public class ValuesGeneratorMain
 			current_sensor_C.setType(Cell_type.RURAL_AREA);
 			current_sensor_C.generate_measurements_from_to_regarding_type(from, to);
 		}
+		
+		//Plot Sensors data:
+		final TimeSeriesPlotter demo = new TimeSeriesPlotter("Sensor Working areas", sensors);
+        demo.pack();
+        RefineryUtilities.centerFrameOnScreen(demo);
+        demo.setVisible(true);
 	}
 }

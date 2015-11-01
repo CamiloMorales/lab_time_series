@@ -16,6 +16,7 @@ public class Sensor
 	public Sensor(String id) 
 	{
 		this.id = id;
+		this.measurements = new ArrayList<Measurement>();
 	}
 
 	public String getId() 
@@ -58,7 +59,9 @@ public class Sensor
 		{
 			System.out.println("Current time: "+current_time);
 			
-			Measurement current_measurement = SampleGenerator.getInstance().generateMeasurement(current_time, type);			
+			Measurement current_measurement = SampleGenerator.getInstance().generateMeasurement(current_time, type);
+			this.measurements.add(current_measurement);
+			
 			current_time = current_time.plusHours(1);
 		}
 	}

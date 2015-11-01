@@ -15,7 +15,7 @@ public class SampleGenerator
 	private static SampleGenerator instance = null;
 	
 	/*
-	 * From: http://stackoverflow.com/questions/21674599/generating-a-lognormal-distribution-from-an-array-in-java
+	 * Snippet from: http://stackoverflow.com/questions/21674599/generating-a-lognormal-distribution-from-an-array-in-java
 	 */
 	public static double LogNormal(double mean, double stddev) 
 	{
@@ -27,6 +27,9 @@ public class SampleGenerator
 	    return Math.pow(Math.E, (mu+(ess*randGen.nextGaussian())));
 	}
 	
+	/*
+	 * Snippet from: http://stackoverflow.com/questions/5853187/skewing-java-random-number-generation-toward-a-certain-number 
+	 */
     static public double nextSkewedBoundedDouble(double min, double max, double skew, double bias)
     {
     	Random randGen = new Random();
