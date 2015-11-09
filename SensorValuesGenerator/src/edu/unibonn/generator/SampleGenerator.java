@@ -24,7 +24,15 @@ public class SampleGenerator
 	    double varx = Math.pow(stddev, 2);
 	    double ess = Math.log(1.0 + (varx/Math.pow(mean,2)));
 	    double mu = Math.log(mean) - (0.5*Math.pow(ess, 2));
-	    return Math.pow(Math.E, (mu+(ess*randGen.nextGaussian())));
+	    
+	    double rand_log_normal_num = Math.pow(Math.E, (mu+(ess*randGen.nextGaussian())));
+	    
+	    if(rand_log_normal_num > 100)
+	    {
+	    	return 100;
+	    }
+	    
+	    return rand_log_normal_num;
 	}
 	
 	/*
@@ -204,15 +212,15 @@ public class SampleGenerator
 			 {
 				 if(morning == Segment_of_day.MORNING)
 				 {
-					 return LogNormal(5, 5);
+					 return LogNormal(50, 5);
 				 }
 				 else if(morning == Segment_of_day.AFTERNOON)
 				 {
-					 return LogNormal(30, 10);
+					 return LogNormal(50, 5);
 				 }
 				 else if(morning == Segment_of_day.NIGHT)
 				 {
-					 return LogNormal(7, 5);
+					 return LogNormal(50, 5);
 				 }
 			 }
 			 else if(workday == Segment_of_week.WEEKEND)
@@ -237,15 +245,15 @@ public class SampleGenerator
 			 {
 				 if(morning == Segment_of_day.MORNING)
 				 {
-					 return LogNormal(8, 5);
+					 return LogNormal(10, 5);
 				 }
 				 else if(morning == Segment_of_day.AFTERNOON)
 				 {
-					 return LogNormal(5, 5);
+					 return LogNormal(10, 5);
 				 }
 				 else if(morning == Segment_of_day.NIGHT)
 				 {
-					 return LogNormal(20, 5);
+					 return LogNormal(10, 5);
 				 }
 			 }
 			 else if(workday == Segment_of_week.WEEKEND)
@@ -270,15 +278,15 @@ public class SampleGenerator
 			 {
 				 if(morning == Segment_of_day.MORNING)
 				 {
-					 return LogNormal(5, 5);
+					 return LogNormal(2, 5);
 				 }
 				 else if(morning == Segment_of_day.AFTERNOON)
 				 {
-					 return LogNormal(10, 5);
+					 return LogNormal(2, 5);
 				 }
 				 else if(morning == Segment_of_day.NIGHT)
 				 {
-					 return LogNormal(8, 5);
+					 return LogNormal(2, 5);
 				 }
 			 }
 			 else if(workday == Segment_of_week.WEEKEND)

@@ -1,8 +1,10 @@
 package edu.unibonn.main;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
+import edu.unibonn.clustering.kmeans.Day_24d;
 import edu.unibonn.generator.SampleGenerator;
 
 public class Sensor 
@@ -64,5 +66,32 @@ public class Sensor
 			
 			current_time = current_time.plusHours(1);
 		}
+	}
+
+	public ArrayList<Day_24d> generate_24d_points()
+	{
+		ArrayList<Day_24d> return_array = new ArrayList<Day_24d>();
+		
+		LocalDate initial_day = measurements.get(0).getRecord_time().toLocalDate();
+		LocalDate last_day_plus_one = measurements.get(measurements.size()-1).getRecord_time().toLocalDate().plusDays(1);
+		
+		int count = 0;
+		
+		for (LocalDate curr_day = initial_day; curr_day.isBefore(last_day_plus_one); curr_day = curr_day.plusDays(1))
+		{
+			Day_24d current_24d = new Day_24d(this.id, curr_day);
+			
+			for (int j = 0; j < 24; j++)
+			{
+				Measurement curr_measurement = measurements.get(j+count);
+				current_24d.addMeasurement(curr_measurement.getErlang(), curr_measurement.getRecord_time().getHour());
+			}
+			
+			return_array.add(current_24d);
+			
+			count++;
+		}
+		
+		return return_array;
 	}
 }

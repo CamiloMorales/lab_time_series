@@ -41,6 +41,7 @@ package edu.unibonn.plotting;
  */
 import java.awt.Color;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
@@ -62,6 +63,7 @@ import org.jfree.ui.RefineryUtilities;
 import org.jfree.util.Log;
 import org.jfree.util.PrintStreamLogTarget;
 
+import edu.unibonn.clustering.kmeans.Cluster;
 import edu.unibonn.main.Measurement;
 import edu.unibonn.main.Sensor;
 
@@ -99,6 +101,41 @@ public class TimeSeriesPlotter extends ApplicationFrame {
         chartPanel.setPreferredSize(new java.awt.Dimension(500, 270));
         chartPanel.setMouseZoomable(true, false);
         setContentPane(chartPanel);
+	}
+    
+    public TimeSeriesPlotter(String title, ArrayList<Cluster> clusters, LocalDateTime from)
+    {
+    	super(title);
+        final XYDataset dataset = createDataset(clusters, from);
+        final JFreeChart chart = createChart(dataset);
+        final ChartPanel chartPanel = new ChartPanel(chart);
+        chartPanel.setPreferredSize(new java.awt.Dimension(500, 270));
+        chartPanel.setMouseZoomable(true, false);
+        setContentPane(chartPanel);
+	}
+
+	private XYDataset createDataset(ArrayList<Cluster> clusters, LocalDateTime from)
+	{
+		final TimeSeriesCollection dataset = new TimeSeriesCollection();
+		
+		for (int i = 0; i < clusters.size(); i++)
+		{
+			Cluster current_cluster = clusters.get(i);	
+			double[] center_of_mass = current_cluster.getCenter_of_mass();
+			
+			final TimeSeries s1 = new TimeSeries(current_cluster.getCluster_id(), Hour.class);
+
+			for (int j = 0; j < 24; j++)
+			{
+				s1.add(new Hour( j, from.getDayOfMonth(), from.getMonthValue(), from.getYear() ), center_of_mass[j]);
+			}
+			
+			dataset.addSeries(s1);
+		}
+
+        dataset.setDomainIsPointsInTime(true);
+
+        return dataset;
 	}
 
 	private XYDataset createDataset(ArrayList<Sensor> sensors)
