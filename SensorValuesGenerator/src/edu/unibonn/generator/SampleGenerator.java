@@ -208,7 +208,7 @@ public class SampleGenerator
 				 }
 				 else if(morning == Segment_of_day.AFTERNOON)
 				 {
-					 return LogNormal(50, 5);
+					 return LogNormal(30, 10);
 				 }
 				 else if(morning == Segment_of_day.NIGHT)
 				 {

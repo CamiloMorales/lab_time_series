@@ -28,7 +28,7 @@ public class ValuesGeneratorMain
 		LocalDateTime from = LocalDateTime.of(2015, Month.OCTOBER, 26, 00, 00, 00);
 		System.out.println("FROM:"+from);
 		
-		LocalDateTime to = LocalDateTime.of(2015, Month.OCTOBER, 31, 00, 00, 00);
+		LocalDateTime to = LocalDateTime.of(2015, Month.NOVEMBER, 02, 00, 00, 00);
 		System.out.println("TO:"+to);
 		
 		for (int i = 0; (i+3) <= sensors.size() ; i=i+3) 
