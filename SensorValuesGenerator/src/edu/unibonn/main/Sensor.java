@@ -94,4 +94,9 @@ public class Sensor
 		
 		return return_array;
 	}
+
+	public void addMeasurement(Measurement measurement)
+	{
+		this.measurements.add(measurement);
+	}
 }

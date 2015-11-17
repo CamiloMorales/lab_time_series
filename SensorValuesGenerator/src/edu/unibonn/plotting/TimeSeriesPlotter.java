@@ -49,6 +49,8 @@ import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.DateAxis;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.StandardXYItemRenderer;
 import org.jfree.chart.renderer.xy.XYItemRenderer;
@@ -106,9 +108,10 @@ public class TimeSeriesPlotter extends ApplicationFrame {
     public TimeSeriesPlotter(String title, ArrayList<Cluster> clusters, LocalDateTime from)
     {
     	super(title);
-        final XYDataset dataset = createDataset(clusters, from);
+        final XYDataset dataset = createDataset(clusters, from);     
         final JFreeChart chart = createChart(dataset);
         final ChartPanel chartPanel = new ChartPanel(chart);
+        
         chartPanel.setPreferredSize(new java.awt.Dimension(500, 270));
         chartPanel.setMouseZoomable(true, false);
         setContentPane(chartPanel);
@@ -143,6 +146,7 @@ public class TimeSeriesPlotter extends ApplicationFrame {
 		final TimeSeriesCollection dataset = new TimeSeriesCollection();
 		
 		for (int i = 0; i < sensors.size(); i++)
+		//for (int i = 0; i < 100; i++)
 		{
 			Sensor current_sensor = sensors.get(i);	
 			ArrayList<Measurement> current_measurements = current_sensor.getMeasurements();
@@ -179,9 +183,9 @@ public class TimeSeriesPlotter extends ApplicationFrame {
             "Sensors",
             "Time", "Erlang",
             dataset,
-            true,
-            true,
-            false
+            false, //t
+            false, //t
+            false //f
         );
 
         chart.setBackgroundPaint(Color.white);
@@ -205,8 +209,11 @@ public class TimeSeriesPlotter extends ApplicationFrame {
             rr.setItemLabelsVisible(true);
         }
         
-        final DateAxis axis = (DateAxis) plot.getDomainAxis();
-        axis.setDateFormatOverride(new SimpleDateFormat("dd-MM-yyyy hh:mm"));
+        final DateAxis axis = (DateAxis) plot.getDomainAxis();    
+        axis.setDateFormatOverride(new SimpleDateFormat("HH:mm"));
+        
+        final ValueAxis axis_y = plot.getRangeAxis();
+        axis_y.setRange(0, 100);
         
         return chart;
 
