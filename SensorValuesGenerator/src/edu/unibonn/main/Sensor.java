@@ -4,7 +4,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
-import edu.unibonn.clustering.kmeans.Day_24d;
 import edu.unibonn.generator.SampleGenerator;
 
 public class Sensor 

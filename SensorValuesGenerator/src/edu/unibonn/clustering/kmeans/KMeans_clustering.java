@@ -5,14 +5,15 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Random;
 
+import edu.unibonn.main.Day_24d;
 import edu.unibonn.main.Sensor;
 
 public class KMeans_clustering
 {
 	//int day: 1- Montag, 2- Dienstag, ..., 7 Sontag.
-	public ArrayList<Cluster> cluster_KMeans_euclidean_24d_specific_day(ArrayList<Sensor> sensors, LocalDateTime from, LocalDateTime to, int k, DayOfWeek day) throws Exception
+	public ArrayList<Cluster_KMeans> cluster_KMeans_euclidean_24d_specific_day(ArrayList<Sensor> sensors, LocalDateTime from, LocalDateTime to, int k, DayOfWeek day) throws Exception
 	{
-		System.out.println("Starting KMEANS");
+		//System.out.println("Starting KMEANS");
 		
 		ArrayList<Day_24d> points_24d = new ArrayList<Day_24d>();
 		
@@ -27,7 +28,7 @@ public class KMeans_clustering
 		ArrayList<Day_24d> specific_day = filter_day(points_24d, day);
 		
 		//1- We generate randomly (uniform) the initial clusters.
-		ArrayList<Cluster> clusters = generate_random_centroids(specific_day, k);
+		ArrayList<Cluster_KMeans> clusters = generate_random_centroids(specific_day, k);
 		
 		//2-Until we get no improvement (quality dont improve anymore), do:
 		double previous_total_clustering_squared_error = -1; //For initialization.
@@ -54,7 +55,8 @@ public class KMeans_clustering
 				
 				for (int j = 0; j < k; j++) //Iterate over all the clusters.
 				{
-					double actual_distance = clusters.get(j).euclidean_distance_to(specific_day.get(i));
+					//double actual_distance = clusters.get(j).euclidean_distance_to(specific_day.get(i));
+					double actual_distance = clusters.get(j).Dynamic_Time_Warping_distance_to(specific_day.get(i));
 					
 					if(actual_distance < current_closest_distance)
 					{
@@ -82,7 +84,7 @@ public class KMeans_clustering
 			}
 		}
 
-		System.out.println("KMEANS FINISHED");
+		System.out.println("\n -KMeans execution FINISHED for k="+k+".\n -Quality measure (Total Cluster square error (within-cluster variation))= "+actual_total_clustering_squared_error);
 		
 		return clusters;
 	}
@@ -107,7 +109,7 @@ public class KMeans_clustering
 	}
 
 
-	public ArrayList<Cluster> cluster_KMeans_euclidean_24d_montags(ArrayList<Sensor> sensors, LocalDateTime from, LocalDateTime to, int k) throws Exception
+	public ArrayList<Cluster_KMeans> cluster_KMeans_euclidean_24d_montags(ArrayList<Sensor> sensors, LocalDateTime from, LocalDateTime to, int k) throws Exception
 	{
 		ArrayList<Day_24d> points_24d = new ArrayList<Day_24d>();
 		
@@ -121,7 +123,7 @@ public class KMeans_clustering
 		ArrayList<Day_24d> only_montags = filter_montags(points_24d);
 		
 		//1- We generate randomly (uniform) the initial clusters.
-		ArrayList<Cluster> clusters = generate_random_centroids(only_montags, k);
+		ArrayList<Cluster_KMeans> clusters = generate_random_centroids(only_montags, k);
 		
 		//2-Until we get no improvement (quality dont improve anymore), do:
 		double previous_total_clustering_squared_error = -1; //For initialization.
@@ -148,7 +150,8 @@ public class KMeans_clustering
 				
 				for (int j = 0; j < k; j++) //Iterate over all the clusters.
 				{
-					double actual_distance = clusters.get(j).euclidean_distance_to(only_montags.get(i));
+					//double actual_distance = clusters.get(j).euclidean_distance_to(only_montags.get(i));
+					double actual_distance = clusters.get(j).Dynamic_Time_Warping_distance_to(only_montags.get(i));
 					
 					if(actual_distance < current_closest_distance)
 					{
@@ -176,9 +179,9 @@ public class KMeans_clustering
 		return clusters;
 	}
 	
-	private ArrayList<Cluster> generate_random_centroids(ArrayList<Day_24d> only_montags, int k) throws Exception
+	private ArrayList<Cluster_KMeans> generate_random_centroids(ArrayList<Day_24d> only_montags, int k) throws Exception
 	{
-		ArrayList<Cluster> random_centroids = new ArrayList<Cluster>();
+		ArrayList<Cluster_KMeans> random_centroids = new ArrayList<Cluster_KMeans>();
 		ArrayList<Integer> previous_random_ints = new ArrayList<Integer>();
 		
 		int count_repetitions = 0;
@@ -189,11 +192,11 @@ public class KMeans_clustering
 		{
 			int curr_rand = r.nextInt(only_montags.size());
 			
-			//curr_rand = i * 100; //For testing.
+			//curr_rand = i * 50; //For testing.
 			
 			if(!previous_random_ints.contains(curr_rand))
 			{
-				random_centroids.add(new Cluster(Integer.valueOf(i).toString(),only_montags.get(curr_rand)));
+				random_centroids.add(new Cluster_KMeans(Integer.valueOf(i).toString(),only_montags.get(curr_rand)));
 			}
 			else
 			{
