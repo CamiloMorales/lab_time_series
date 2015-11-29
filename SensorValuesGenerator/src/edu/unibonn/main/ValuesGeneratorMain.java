@@ -64,9 +64,9 @@ public class ValuesGeneratorMain
     
 		//KMEANS ##########################################################################################
 		
-        int min_k = 2;
-        int max_k = 8;
-        
+        int min_k = 10;
+        int max_k = 10;
+
         int number_of_tries = 1;
 
         for (int current_k = min_k; current_k <= max_k; current_k++)
@@ -79,9 +79,25 @@ public class ValuesGeneratorMain
         		//String clustering_id = "KMeans_k_"+current_k;
         		
                 final TimeSeriesPlotter demo_1 = new TimeSeriesPlotter(clustering_id, clusters, from);
-                demo_1.pack();
-                RefineryUtilities.centerFrameOnScreen(demo_1);
-                demo_1.setVisible(true);
+                //demo_1.pack();
+                //RefineryUtilities.centerFrameOnScreen(demo_1);
+                //demo_1.setVisible(true);
+                
+                for (int j = 0; j < clusters.size(); j++)
+                {
+                	if(clusters.get(j).getMembership().size() > 0)
+                	{
+                		clustering_id = "KMeans_k_"+current_k+ "_try_"+ i +"_only_cluster_"+j+"has_"+clusters.get(j).getMembership().size()+"members_("+((float)clusters.get(j).getMembership().size()*100)/821+"%)";
+                    	
+                    	ArrayList<Cluster_KMeans> current_cluster = new ArrayList<Cluster_KMeans>();
+                    	current_cluster.add(clusters.get(j));
+                    	
+                    	final TimeSeriesPlotter demo_2 = new TimeSeriesPlotter(clustering_id, current_cluster, from);
+                        //demo_2.pack();
+                        //RefineryUtilities.centerFrameOnScreen(demo_2);
+                        //demo_2.setVisible(true);
+                	}                	
+				}
                 
                 exportToCVS_clusterMembership(clusters, clustering_id);
 			}
@@ -111,6 +127,9 @@ public class ValuesGeneratorMain
 
 		System.out.println(" -In \""+csv+ "\""+":");
 		
+		double count_absolute = 0;
+		double count_percentage = 0;
+		
 		CSVWriter writer;
 		try
 		{
@@ -128,8 +147,14 @@ public class ValuesGeneratorMain
 					data.add(new String[] {all_members.get(j).getId(), current_cluster.getCluster_id()});
 				}
 
+				count_absolute = count_absolute + all_members.size();
+				count_percentage = count_percentage + ((float)all_members.size()/821)*100;
+				
 				System.out.println("\t - Cluster "+i+" has "+all_members.size()+" members. ("+((float)all_members.size()/821)*100+"%)");
 			}
+			
+			System.out.println("Total number of series: "+count_absolute);
+			System.out.println("Total percentage of series: "+count_percentage+"%");
 			
 			writer.writeAll(data);
 			writer.close();

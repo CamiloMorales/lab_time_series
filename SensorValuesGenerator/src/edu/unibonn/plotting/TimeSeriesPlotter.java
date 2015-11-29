@@ -409,14 +409,14 @@ public class TimeSeriesPlotter extends ApplicationFrame {
         
         final DateAxis axis = (DateAxis) plot.getDomainAxis();    
         axis.setDateFormatOverride(new SimpleDateFormat("HH:mm"));
-       
-        final ValueAxis axis_y = plot.getRangeAxis();
-        axis_y.setRange(0, 105);
+
+        //final ValueAxis axis_y = plot.getRangeAxis();
+        //axis_y.setRange(0, 20);
         
         plot.setDataset(1,dataset_centroids);
         plot.setRenderer(1, new StandardXYItemRenderer());
         
-        for (int i = 0; (i < 11) && (i < clusters.size()); i++)
+        for (int i = 0; (i < clusters.size()); i++)
 		{
         	//plot.getRenderer(1).setSeriesPaint(i, getColor(i));
         	plot.getRenderer(1).setSeriesPaint(i, Color.BLACK);
@@ -426,7 +426,7 @@ public class TimeSeriesPlotter extends ApplicationFrame {
         plot.setDatasetRenderingOrder(DatasetRenderingOrder.FORWARD);
         
         return chart;
-    }
+    }  
     
     // ****************************************************************************
     // * JFREECHART DEVELOPER GUIDE                                               *

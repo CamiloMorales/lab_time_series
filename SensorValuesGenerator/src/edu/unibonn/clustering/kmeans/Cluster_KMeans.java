@@ -6,6 +6,8 @@ import edu.unibonn.main.Day_24d;
 
 public class Cluster_KMeans
 {
+	static public enum DTW_path_move { INITIAL, DIAGONAL, UP, LEFT };
+	
 	private String cluster_id;
 	private double[] center_of_mass;
 	private ArrayList<Day_24d> membership;
@@ -81,10 +83,8 @@ public class Cluster_KMeans
 		}
 
 		double[][] accumulated_cost_matrix = new double[24][24];
-		
-		//We always start at point (0,0).
 		accumulated_cost_matrix[0][0] = squared_differences[0][0];
-		
+
 		//First the first row
 		for (int y = 1; y < 24; y++)
 		{	
@@ -96,17 +96,17 @@ public class Cluster_KMeans
 		{	
 			accumulated_cost_matrix[x][0] = squared_differences[x][0] + accumulated_cost_matrix[x-1][0];
 		}
-		
+
 		//Then the rest
 		for (int x = 1; x < 24; x++)
 		{	
 			for (int y = 1; y < 24; y++)
 			{	
-				double diagonal_down = accumulated_cost_matrix[x-1][y-1];
-				double down = accumulated_cost_matrix[x][y-1];
+				double diagonal = accumulated_cost_matrix[x-1][y-1];
+				double up = accumulated_cost_matrix[x][y-1];
 				double left = accumulated_cost_matrix[x-1][y];
 				
-				accumulated_cost_matrix[x][y] = Math.min(Math.min(diagonal_down, down), left) + squared_differences[x][y];
+				accumulated_cost_matrix[x][y] = Math.min(Math.min(diagonal, up), left) + squared_differences[x][y];
 			}
 		}
 		
@@ -158,10 +158,130 @@ public class Cluster_KMeans
 		for (int i = 0; i < number_of_points_in_cluster; i++)
 		{	
 			Day_24d current_member = this.membership.get(i);
-			//total_squared_error += Math.pow(euclidean_distance_to(current_member), 2);			
-			total_squared_error += Math.pow(Dynamic_Time_Warping_distance_to(current_member), 2);
+			total_squared_error += Math.pow(euclidean_distance_to(current_member), 2);			
+			//total_squared_error += Math.pow(Dynamic_Time_Warping_distance_to(current_member), 2);
 		}
 
 		return total_squared_error;
+	}
+
+	public void recalculatePositionOfCentroid_DBA()
+	{
+		ArrayList<Double>[] tupleAssociation = new ArrayList[center_of_mass.length];
+		
+		for (int i = 0; i < tupleAssociation.length; i++)
+		{
+			tupleAssociation[i] = new ArrayList<Double>(24);
+		}
+		
+		for (int j = 0; j < membership.size(); j++)
+		{
+			Day_24d current_member = membership.get(j);
+			double[][] squared_differences = new double[24][24];
+			
+			for (int x = 0; x < 24; x++)
+			{	
+				for (int y = 0; y < 24; y++)
+				{	
+					squared_differences[x][y] = Math.pow(this.center_of_mass[x]-current_member.getMeasurement(y), 2);
+				}					
+			}
+
+			double[][] accumulated_cost_matrix = new double[24][24];
+			accumulated_cost_matrix[0][0] = squared_differences[0][0];
+					
+			DTW_path_move[][] path_matrix = new DTW_path_move[24][24];
+			path_matrix[0][0] = DTW_path_move.INITIAL;
+			
+			int[][] optimal_path_length = new int[24][24];
+			optimal_path_length[0][0] = 0;
+
+			//First the first row
+			for (int y = 1; y < 24; y++)
+			{	
+				accumulated_cost_matrix[0][y] = squared_differences[0][y] + accumulated_cost_matrix[0][y-1];
+				path_matrix[0][y] = DTW_path_move.UP;
+				optimal_path_length[0][y] = y;
+			}
+			
+			//Then the first Column
+			for (int x = 1; x < 24; x++)
+			{	
+				accumulated_cost_matrix[x][0] = squared_differences[x][0] + accumulated_cost_matrix[x-1][0];
+				path_matrix[x][0] = DTW_path_move.LEFT;
+				optimal_path_length[x][0] = x;
+			}
+
+			//Then the rest
+			for (int x = 1; x < 24; x++)
+			{	
+				for (int y = 1; y < 24; y++)
+				{	
+					double diagonal = accumulated_cost_matrix[x-1][y-1];
+					double up = accumulated_cost_matrix[x][y-1];
+					double left = accumulated_cost_matrix[x-1][y];
+					
+					if(Math.min(Math.min(diagonal, up), left) == left)
+					{
+						path_matrix[x][y] = DTW_path_move.LEFT;
+						optimal_path_length[x][y] = optimal_path_length[x-1][y]+1;					
+					}
+					else if(Math.min(diagonal, up) == diagonal)
+					{
+						path_matrix[x][y] = DTW_path_move.DIAGONAL;
+						optimal_path_length[x][y] = optimal_path_length[x-1][y-1]+1;
+					}
+					else if(Math.min(diagonal, up) == up)
+					{
+						path_matrix[x][y] = DTW_path_move.UP;
+						optimal_path_length[x][y] = optimal_path_length[x][y-1]+1;
+					}
+					else
+					{
+						System.out.println("ERROR AT DTW-BA CENTROID CALCULATION:");
+					}
+					
+					accumulated_cost_matrix[x][y] = Math.min(Math.min(diagonal, up), left) + squared_differences[x][y];
+				}
+			}
+			
+			int length_optimal_path = optimal_path_length[24-1][24-1];
+			
+			int dimensions_of_centroid = 24-1;
+			int dimensions_of_series = 24-1;
+			
+			for (int i = length_optimal_path; i >= 0; i--)
+			{
+				tupleAssociation[dimensions_of_centroid].add(current_member.getMeasurement(dimensions_of_series));
+				
+				if(path_matrix[dimensions_of_centroid][dimensions_of_series].equals(DTW_path_move.DIAGONAL))
+				{
+					dimensions_of_centroid--;
+					dimensions_of_series--;
+				}
+				else if(path_matrix[dimensions_of_centroid][dimensions_of_series].equals(DTW_path_move.UP))
+				{
+					dimensions_of_series--;
+				}
+				else if(path_matrix[dimensions_of_centroid][dimensions_of_series].equals(DTW_path_move.LEFT))
+				{
+					dimensions_of_centroid--;
+				}
+			}
+		}
+
+		for (int i = 0; i < tupleAssociation.length; i++)
+		{
+			ArrayList<Double> current_tuple_association = tupleAssociation[i];
+			
+			double current_count = 0;
+			
+			for (int j = 0; j < current_tuple_association.size(); j++)
+			{
+				current_count = current_count + current_tuple_association.get(j);
+			}
+			
+			center_of_mass[i] = (double) current_count/current_tuple_association.size();
+		}
 	}
 }

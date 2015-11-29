@@ -52,7 +52,7 @@ public class KMeans_clustering
 			{
 				double current_closest_distance = Double.POSITIVE_INFINITY;
 				int current_closest_cluster_index = -1;
-				
+
 				for (int j = 0; j < k; j++) //Iterate over all the clusters.
 				{
 					//double actual_distance = clusters.get(j).euclidean_distance_to(specific_day.get(i));
@@ -75,7 +75,8 @@ public class KMeans_clustering
 			
 			for (int i = 0; i < k; i++) //Iterate over all the clusters.
 			{
-				clusters.get(i).recalculatePositionOfCentroid(); //Means.
+				//clusters.get(i).recalculatePositionOfCentroid(); //Means.
+				clusters.get(i).recalculatePositionOfCentroid_DBA();
 			}
 			
 			for (int i = 0; i < k; i++) //Iterate over all the clusters.
@@ -109,76 +110,77 @@ public class KMeans_clustering
 	}
 
 
-	public ArrayList<Cluster_KMeans> cluster_KMeans_euclidean_24d_montags(ArrayList<Sensor> sensors, LocalDateTime from, LocalDateTime to, int k) throws Exception
-	{
-		ArrayList<Day_24d> points_24d = new ArrayList<Day_24d>();
-		
-		//Generate the 24d points
-		for (int i = 0 ; i < sensors.size(); i++)
-		{
-			ArrayList<Day_24d> current_points_24d = sensors.get(i).generate_24d_points();
-			points_24d.addAll(current_points_24d);
-		}
-		
-		ArrayList<Day_24d> only_montags = filter_montags(points_24d);
-		
-		//1- We generate randomly (uniform) the initial clusters.
-		ArrayList<Cluster_KMeans> clusters = generate_random_centroids(only_montags, k);
-		
-		//2-Until we get no improvement (quality dont improve anymore), do:
-		double previous_total_clustering_squared_error = -1; //For initialization.
-		double actual_total_clustering_squared_error = -1;//For initialization.
-		
-		while(actual_total_clustering_squared_error < previous_total_clustering_squared_error || actual_total_clustering_squared_error == -1)
-		{
-			//2.1- Iterate over all the points, for each point (in d dimensions) calculate the distance to each centroid, and assign it to the closest centroid.
-			
-			previous_total_clustering_squared_error = actual_total_clustering_squared_error; //Save the previous total square error for comparing at the end of this iteration.
-			actual_total_clustering_squared_error = 0; //re-inititialize the total square error.
-			
-			for (int j = 0; j < k; j++) //Before each iteration we reset the membership vector of the clusters BUT not the new position (random in the first iteration). 
-									    //That way we can re-calculate and re-assign the points to the new centroids and re-calculate the quality, and then decide (comparing with the qualty of the previous iteration) weather to iterate again or finish.
-										//In the first iteration the position of the centroids are random, and the initial previous_clustering_quality (sum of the squared error of each cluster) is Infinity. (We guarantee at least the 2 iterations)
-			{
-				clusters.get(j).reset_membership_vector();
-			}
-			
-			for (int i = 0; i < only_montags.size(); i++) //Iterate over all the points.
-			{
-				double current_closest_distance = Double.POSITIVE_INFINITY;
-				int current_closest_cluster_index = -1;
-				
-				for (int j = 0; j < k; j++) //Iterate over all the clusters.
-				{
-					//double actual_distance = clusters.get(j).euclidean_distance_to(only_montags.get(i));
-					double actual_distance = clusters.get(j).Dynamic_Time_Warping_distance_to(only_montags.get(i));
-					
-					if(actual_distance < current_closest_distance)
-					{
-						current_closest_distance = actual_distance;
-						current_closest_cluster_index = j;
-					}
-				}
-				
-				clusters.get(current_closest_cluster_index).addMembership(only_montags.get(i));
-			}
-			
-			for (int i = 0; i < k; i++) //Iterate over all the clusters.
-			{
-				clusters.get(i).recalculatePositionOfCentroid(); //Means.
-			}
-			
-			for (int i = 0; i < k; i++) //Iterate over all the clusters.
-			{
-				actual_total_clustering_squared_error += clusters.get(i).getClusterSquareError(); //Calculate the new total clustering squared error.
-			}
-		}
-
-		System.out.println("Finished");
-		
-		return clusters;
-	}
-	
+//	public ArrayList<Cluster_KMeans> cluster_KMeans_euclidean_24d_montags(ArrayList<Sensor> sensors, LocalDateTime from, LocalDateTime to, int k) throws Exception
+//	{
+//		ArrayList<Day_24d> points_24d = new ArrayList<Day_24d>();
+//		
+//		//Generate the 24d points
+//		for (int i = 0 ; i < sensors.size(); i++)
+//		{
+//			ArrayList<Day_24d> current_points_24d = sensors.get(i).generate_24d_points();
+//			points_24d.addAll(current_points_24d);
+//		}
+//		
+//		ArrayList<Day_24d> only_montags = filter_montags(points_24d);
+//		
+//		//1- We generate randomly (uniform) the initial clusters.
+//		ArrayList<Cluster_KMeans> clusters = generate_random_centroids(only_montags, k);
+//		
+//		//2-Until we get no improvement (quality dont improve anymore), do:
+//		double previous_total_clustering_squared_error = -1; //For initialization.
+//		double actual_total_clustering_squared_error = -1;//For initialization.
+//		
+//		while(actual_total_clustering_squared_error < previous_total_clustering_squared_error || actual_total_clustering_squared_error == -1)
+//		{
+//			//2.1- Iterate over all the points, for each point (in d dimensions) calculate the distance to each centroid, and assign it to the closest centroid.
+//			
+//			previous_total_clustering_squared_error = actual_total_clustering_squared_error; //Save the previous total square error for comparing at the end of this iteration.
+//			actual_total_clustering_squared_error = 0; //re-inititialize the total square error.
+//			
+//			for (int j = 0; j < k; j++) //Before each iteration we reset the membership vector of the clusters BUT not the new position (random in the first iteration). 
+//									    //That way we can re-calculate and re-assign the points to the new centroids and re-calculate the quality, and then decide (comparing with the qualty of the previous iteration) weather to iterate again or finish.
+//										//In the first iteration the position of the centroids are random, and the initial previous_clustering_quality (sum of the squared error of each cluster) is Infinity. (We guarantee at least the 2 iterations)
+//			{
+//				clusters.get(j).reset_membership_vector();
+//			}
+//			
+//			for (int i = 0; i < only_montags.size(); i++) //Iterate over all the points.
+//			{
+//				double current_closest_distance = Double.POSITIVE_INFINITY;
+//				int current_closest_cluster_index = -1;
+//
+//				for (int j = 0; j < k; j++) //Iterate over all the clusters.
+//				{
+//					//double actual_distance = clusters.get(j).euclidean_distance_to(only_montags.get(i));
+//					double actual_distance = clusters.get(j).Dynamic_Time_Warping_distance_to(only_montags.get(i));
+//					
+//					if(actual_distance < current_closest_distance)
+//					{
+//						current_closest_distance = actual_distance;
+//						current_closest_cluster_index = j;
+//					}
+//				}
+//				
+//				clusters.get(current_closest_cluster_index).addMembership(only_montags.get(i));
+//			}
+//			
+//			for (int i = 0; i < k; i++) //Iterate over all the clusters.
+//			{
+//				//clusters.get(i).recalculatePositionOfCentroid(); //Means.
+//				clusters.get(i).recalculatePositionOfCentroid_DBA(); //Means.
+//			}
+//			
+//			for (int i = 0; i < k; i++) //Iterate over all the clusters.
+//			{
+//				actual_total_clustering_squared_error += clusters.get(i).getClusterSquareError(); //Calculate the new total clustering squared error.
+//			}
+//		}
+//
+//		System.out.println("Finished");
+//		
+//		return clusters;
+//	}
+//	
 	private ArrayList<Cluster_KMeans> generate_random_centroids(ArrayList<Day_24d> only_montags, int k) throws Exception
 	{
 		ArrayList<Cluster_KMeans> random_centroids = new ArrayList<Cluster_KMeans>();
@@ -192,11 +194,12 @@ public class KMeans_clustering
 		{
 			int curr_rand = r.nextInt(only_montags.size());
 			
-			//curr_rand = i * 50; //For testing.
+			curr_rand = i * 50; //For testing.
 			
 			if(!previous_random_ints.contains(curr_rand))
 			{
-				random_centroids.add(new Cluster_KMeans(Integer.valueOf(i).toString(),only_montags.get(curr_rand)));
+				previous_random_ints.add(curr_rand);
+				random_centroids.add(new Cluster_KMeans(Integer.valueOf(i).toString(),only_montags.get(curr_rand)));				
 			}
 			else
 			{
