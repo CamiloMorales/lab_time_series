@@ -28,6 +28,8 @@ public class ValuesGeneratorMain
 {
 	public static void main(String[] args) throws Exception
 	{
+		long initial_time = System.currentTimeMillis();
+		
 		ArrayList<Sensor> sensors = new ArrayList<Sensor>();
 		
 		for (int i = 0; i < 18; i++)
@@ -45,7 +47,7 @@ public class ValuesGeneratorMain
 		
 		String pathCSV = "input_data/real_data_time_series_Time_vs_Sensors.csv";
 		
-		boolean normalized = true;
+		boolean normalized = false;
 		
 		sensors = new ValuesGeneratorMain().loadDataCSV(pathCSV, normalized);
 		
@@ -64,8 +66,8 @@ public class ValuesGeneratorMain
     
 		//KMEANS ##########################################################################################
 		
-        int min_k = 10;
-        int max_k = 10;
+        int min_k = 4;
+        int max_k = 4;
 
         int number_of_tries = 1;
 
@@ -75,6 +77,10 @@ public class ValuesGeneratorMain
         	{
         		ArrayList<Cluster_KMeans> clusters = new KMeans_clustering().cluster_KMeans_euclidean_24d_specific_day(sensors, from, to, current_k, DayOfWeek.MONDAY); //day = 1 Because real data we have is from a Monday.
 
+        		long final_time = System.currentTimeMillis();
+        		
+        		System.out.println("Execution took: "+((double)(final_time-initial_time)/1000));
+        		
         		String clustering_id = "KMeans_k_"+current_k+ "_try_"+ i ;
         		//String clustering_id = "KMeans_k_"+current_k;
         		
