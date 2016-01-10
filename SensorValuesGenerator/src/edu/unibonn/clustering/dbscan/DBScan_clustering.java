@@ -18,6 +18,9 @@ public class DBScan_clustering
 	
 	public ArrayList<Cluster_DBScan> cluster_DBScan_euclidean_24d_specific_day(ArrayList<Sensor> sensors, LocalDateTime from, LocalDateTime to, double epsilon, double minPts, DayOfWeek day) throws Exception
 	{
+		epsilon = 50;
+        minPts = 3;
+		
 		ArrayList<Day_24d> points_24d = new ArrayList<Day_24d>();
 		
 		//Generate the 24d points
@@ -43,14 +46,18 @@ public class DBScan_clustering
 			unvisited_points.add(instances_I.get(i));
 		}
 		
-		while(!unvisited_points.isEmpty()) //While ther exist unvisited points.
+		while(!unvisited_points.isEmpty()) //While there exist unvisited points.
 		{
 			//Get next unvisited and mark it as visited. (i.e. remove it from the queue)
 			Day_24d current_point = unvisited_points.poll();
 			
 			Set<Day_24d> current_neighborhood = get_e_neighborhood_of(current_point, instances_I, epsilon);
 			
-			if(current_neighborhood.size() < minPts)
+			int neighborhood_size = current_neighborhood.size();
+			
+			System.out.println("Neighborhood_size: "+neighborhood_size);
+			
+			if(neighborhood_size < minPts)
 			{
 				noise_points.add(current_point);
 			}
@@ -64,6 +71,7 @@ public class DBScan_clustering
 			}
 		}
 		
+		System.out.println("\n -Clusters found: "+ return_clusters.size());
 		System.out.println("\n -Noise points found: "+ noise_points.size());
 		
 		return return_clusters;
@@ -93,7 +101,7 @@ public class DBScan_clustering
 				}
 			}
 
-			if(!point_belongs_to_any_cluster(current_neighbor, return_clusters))
+			if(!point_belongs_to_any_cluster(current_neighbor, return_clusters) && !new_cluster.getMembership().contains(current_neighbor))
 			{
 				new_cluster.addMembership(current_neighbor);
 			}
@@ -145,15 +153,25 @@ public class DBScan_clustering
 	{
 		Set<Day_24d> return_neighborhood_points = new HashSet<Day_24d>();
 		
+		double mean = 0;
+		
 		for (Iterator iterator = instances_I.iterator(); iterator.hasNext();)
 		{
 			Day_24d current_point = (Day_24d) iterator.next();
 			
-			if(point.euclidean_distance_to(current_point) <= epsilon)
+			double distance = point.euclidean_distance_to(current_point);
+			
+			//System.out.println("Distance: "+distance);
+			
+			if(distance <= epsilon)
 			{
 				return_neighborhood_points.add(current_point);
 			}
+			
+			mean = mean + distance;
 		}
+		
+		System.out.println("Distance MEAN: "+ (mean/(instances_I.size()-1)) );
 		
 		return return_neighborhood_points;
 	}

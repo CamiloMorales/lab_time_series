@@ -22,7 +22,8 @@ import edu.unibonn.clustering.dbscan.DBScan_clustering;
 import edu.unibonn.clustering.kmeans.Cluster_KMeans;
 import edu.unibonn.clustering.kmeans.KMeans_clustering;
 import edu.unibonn.main.Sensor.Cell_type;
-import edu.unibonn.plotting.TimeSeriesPlotter;
+import edu.unibonn.plotting.TimeSeriesPlotter_DBScan;
+import edu.unibonn.plotting.TimeSeriesPlotter_KMeans;
 
 public class ValuesGeneratorMain
 {
@@ -47,7 +48,7 @@ public class ValuesGeneratorMain
 		
 		String pathCSV = "input_data/real_data_time_series_Time_vs_Sensors.csv";
 		
-		boolean normalized = false;
+		boolean normalized = true;
 		
 		sensors = new ValuesGeneratorMain().loadDataCSV(pathCSV, normalized);
 		
@@ -66,68 +67,98 @@ public class ValuesGeneratorMain
     
 		//KMEANS ##########################################################################################
 		
-        int min_k = 4;
-        int max_k = 4;
+		int temp_kmeans_or_dbscan = 1; //0-KMeans, 1-DBScan
+		
+		if(temp_kmeans_or_dbscan == 0)
+		{
+			int min_k = 4;
+	        int max_k = 4;
 
-        int number_of_tries = 1;
+	        int number_of_tries = 1;
 
-        for (int current_k = min_k; current_k <= max_k; current_k++)
-        {
-        	for (int i = 1; i <= number_of_tries; i++)
-        	{
-        		ArrayList<Cluster_KMeans> clusters = new KMeans_clustering().cluster_KMeans_euclidean_24d_specific_day(sensors, from, to, current_k, DayOfWeek.MONDAY); //day = 1 Because real data we have is from a Monday.
+	        for (int current_k = min_k; current_k <= max_k; current_k++)
+	        {
+	        	for (int i = 1; i <= number_of_tries; i++)
+	        	{
+	        		ArrayList<Cluster_KMeans> clusters = new KMeans_clustering().cluster_KMeans_euclidean_24d_specific_day(sensors, from, to, current_k, DayOfWeek.MONDAY); //day = 1 Because real data we have is from a Monday.
 
-        		long final_time = System.currentTimeMillis();
-        		
-        		System.out.println("Execution took: "+((double)(final_time-initial_time)/1000));
-        		
-        		String clustering_id = "KMeans_k_"+current_k+ "_try_"+ i ;
-        		//String clustering_id = "KMeans_k_"+current_k;
-        		
-                final TimeSeriesPlotter demo_1 = new TimeSeriesPlotter(clustering_id, clusters, from);
-                //demo_1.pack();
-                //RefineryUtilities.centerFrameOnScreen(demo_1);
-                //demo_1.setVisible(true);
-                
-                for (int j = 0; j < clusters.size(); j++)
-                {
-                	if(clusters.get(j).getMembership().size() > 0)
-                	{
-                		clustering_id = "KMeans_k_"+current_k+ "_try_"+ i +"_only_cluster_"+j+"has_"+clusters.get(j).getMembership().size()+"members_("+((float)clusters.get(j).getMembership().size()*100)/821+"%)";
-                    	
-                    	ArrayList<Cluster_KMeans> current_cluster = new ArrayList<Cluster_KMeans>();
-                    	current_cluster.add(clusters.get(j));
-                    	
-                    	final TimeSeriesPlotter demo_2 = new TimeSeriesPlotter(clustering_id, current_cluster, from);
-                        //demo_2.pack();
-                        //RefineryUtilities.centerFrameOnScreen(demo_2);
-                        //demo_2.setVisible(true);
-                	}                	
+	        		long final_time = System.currentTimeMillis();
+	        		
+	        		System.out.println("Execution took: "+((double)(final_time-initial_time)/1000));
+	        		
+	        		String clustering_id = "KMeans_k_"+current_k+ "_try_"+ i ;
+	        		//String clustering_id = "KMeans_k_"+current_k;
+	        		
+	                final TimeSeriesPlotter_KMeans demo_1 = new TimeSeriesPlotter_KMeans(clustering_id, clusters, from);
+	                //demo_1.pack();
+	                //RefineryUtilities.centerFrameOnScreen(demo_1);
+	                //demo_1.setVisible(true);
+	                
+	                String separate_clustering_id_ = new String();
+	                
+	                for (int j = 0; j < clusters.size(); j++)
+	                {
+	                	if(clusters.get(j).getMembership().size() > 0)
+	                	{
+	                		separate_clustering_id_ = "KMeans_k_"+current_k+ "_try_"+ i +"_only_cluster_"+clusters.get(j).getCluster_id()+"has_"+clusters.get(j).getMembership().size()+"members_("+((float)clusters.get(j).getMembership().size()*100)/821+"%)";
+	                    	
+	                    	ArrayList<Cluster_KMeans> current_cluster = new ArrayList<Cluster_KMeans>();
+	                    	current_cluster.add(clusters.get(j));
+	                    	
+	                    	final TimeSeriesPlotter_KMeans demo_2 = new TimeSeriesPlotter_KMeans(separate_clustering_id_, current_cluster, from);
+	                        //demo_2.pack();
+	                        //RefineryUtilities.centerFrameOnScreen(demo_2);
+	                        //demo_2.setVisible(true);
+	                	}                	
+					}
+	                
+	                exportToCVS_clusterMembership_KMeans(clusters, clustering_id);
 				}
-                
-                exportToCVS_clusterMembership(clusters, clustering_id);
 			}
 		}
-        
-		//DBScan ##########################################################################################
-        
-//        int epsilon = 2;
-//        int minPts = 30;
-//
-//		ArrayList<Cluster_DBScan> clusters = new DBScan_clustering().cluster_DBScan_euclidean_24d_specific_day(sensors, from, to, epsilon, minPts, DayOfWeek.MONDAY); //day = 1 Because real data we have is from a Monday.
-//
-//		String dbscan_clustering_id = "DBScan_epsilon_"+epsilon+"_minPts_"+minPts;
-//		
-//        final TimeSeriesPlotter demo_1 = new TimeSeriesPlotter(dbscan_clustering_id, clusters, from);
-//        demo_1.pack();
-//        RefineryUtilities.centerFrameOnScreen(demo_1);
-//        demo_1.setVisible(true);
-//        
-//        exportToCVS_clusterMembership(clusters, dbscan_clustering_id);
+		else if(temp_kmeans_or_dbscan == 1)
+		{
+			//DBScan ##########################################################################################
+
+	        int epsilon = 100;
+	        int minPts = 8;
+	
+			ArrayList<Cluster_DBScan> clusters = new DBScan_clustering().cluster_DBScan_euclidean_24d_specific_day(sensors, from, to, epsilon, minPts, DayOfWeek.MONDAY); //day = 1 Because real data we have is from a Monday.
+	
+			String dbscan_clustering_id = "DBScan_epsilon_"+epsilon+"_minPts_"+minPts;
+			
+	        final TimeSeriesPlotter_DBScan demo_1 = new TimeSeriesPlotter_DBScan(dbscan_clustering_id, clusters, from);
+//	        demo_1.pack();
+//	        RefineryUtilities.centerFrameOnScreen(demo_1);
+//	        demo_1.setVisible(true);
+
+	        String separate_clustering_id_ = new String();
+            
+            for (int j = 0; j < clusters.size(); j++)
+            {
+            	if(clusters.get(j).getMembership().size() > 0)
+            	{
+            		separate_clustering_id_ = "DBScan_epsilon_"+epsilon+"_only_cluster_"+clusters.get(j).getCluster_id()+"has_"+clusters.get(j).getMembership().size()+"members_("+((float)clusters.get(j).getMembership().size()*100)/821+"%)";
+                	
+                	ArrayList<Cluster_DBScan> current_cluster = new ArrayList<Cluster_DBScan>();
+                	current_cluster.add(clusters.get(j));
+                	
+                	final TimeSeriesPlotter_DBScan demo_DBScan = new TimeSeriesPlotter_DBScan(separate_clustering_id_, current_cluster, from);
+                    //demo_2.pack();
+                    //RefineryUtilities.centerFrameOnScreen(demo_2);
+                    //demo_2.setVisible(true);
+            	}                	
+			}
+//	        exportToCVS_clusterMembership_DBScan(clusters, dbscan_clustering_id);
+		}
+		else
+		{
+			System.out.println("ERROR!");
+		}
 	}
 	
 	//from: http://viralpatel.net/blogs/java-read-write-csv-file/
-	private static void exportToCVS_clusterMembership(ArrayList<Cluster_KMeans> clusters, String clustering_id)
+	private static void exportToCVS_clusterMembership_KMeans(ArrayList<Cluster_KMeans> clusters, String clustering_id)
 	{
 		String csv = "./csv_clusters_membership_output/"+clustering_id+".csv";
 
@@ -171,40 +202,40 @@ public class ValuesGeneratorMain
 		}	
 	}
 	
-//	private static void exportToCVS_clusterMembership(ArrayList<Cluster_DBScan> clusters, String clustering_id)
-//	{
-//		String csv = "./csv_clusters_membership_output/"+clustering_id+".csv";
-//
-//		System.out.println(" -In \""+csv+ "\""+":");
-//		
-//		CSVWriter writer;
-//		try
-//		{
-//			writer = new CSVWriter(new FileWriter(csv));
-//			List<String[]> data = new ArrayList<String[]>();
-//			
-//			for (int i = 0; i < clusters.size(); i++)
-//			{
-//				Cluster_DBScan current_cluster = clusters.get(i);
-//				
-//				ArrayList<Day_24d> all_members = current_cluster.getMembership();
-//				
-//				for (int j = 0; j < all_members.size(); j++)
-//				{
-//					data.add(new String[] {all_members.get(j).getId(), current_cluster.getCluster_id()});
-//				}
-//
-//				System.out.println("\t - Cluster "+i+" has "+all_members.size()+" members. ("+((float)all_members.size()/821)*100+"%)");
-//			}
-//			
-//			writer.writeAll(data);
-//			writer.close();
-//		}
-//		catch (IOException e)
-//		{
-//			e.printStackTrace();
-//		}	
-//	}
+	private static void exportToCVS_clusterMembership_DBScan(ArrayList<Cluster_DBScan> clusters, String clustering_id)
+	{
+		String csv = "./csv_clusters_membership_output/"+clustering_id+".csv";
+
+		System.out.println(" -In \""+csv+ "\""+":");
+		
+		CSVWriter writer;
+		try
+		{
+			writer = new CSVWriter(new FileWriter(csv));
+			List<String[]> data = new ArrayList<String[]>();
+			
+			for (int i = 0; i < clusters.size(); i++)
+			{
+				Cluster_DBScan current_cluster = clusters.get(i);
+				
+				ArrayList<Day_24d> all_members = current_cluster.getMembership();
+				
+				for (int j = 0; j < all_members.size(); j++)
+				{
+					data.add(new String[] {all_members.get(j).getId(), current_cluster.getCluster_id()});
+				}
+
+				System.out.println("\t - Cluster "+i+" has "+all_members.size()+" members. ("+((float)all_members.size()/821)*100+"%)");
+			}
+			
+			writer.writeAll(data);
+			writer.close();
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}	
+	}
 
 	private ArrayList<Sensor> loadDataCSV(String dataFilePath, boolean normalized)
 	{

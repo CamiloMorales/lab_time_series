@@ -31,12 +31,12 @@ public class KMeans_clustering
 		ArrayList<Day_24d> specific_day = filter_day(points_24d, day);
 		
 		//1- We generate randomly (uniform) the initial clusters.
-		ArrayList<Cluster_KMeans> clusters = generate_random_centroids(specific_day, k);
+		//ArrayList<Cluster_KMeans> clusters = generate_random_centroids(specific_day, k);
 		
-		double T1 = 200; //200
+		double T1 = 150; //200
 		double T2 = 100; //50
 		
-		//ArrayList<Cluster_KMeans> clusters = generate_centroids_with_canopy(specific_day, T1, T2);	
+		ArrayList<Cluster_KMeans> clusters = generate_centroids_with_canopy(specific_day, T1, T2);	
 		k = clusters.size();
 		
 		//2-Until we get no improvement (quality dont improve anymore), do:
@@ -71,8 +71,8 @@ public class KMeans_clustering
 
 				for (int j = 0; j < k; j++) //Iterate over all the clusters.
 				{
-					//double actual_distance = clusters.get(j).euclidean_distance_to(specific_day.get(i));
-					double actual_distance = clusters.get(j).Dynamic_Time_Warping_distance_to(specific_day.get(i));
+					double actual_distance = clusters.get(j).euclidean_distance_to(specific_day.get(i));
+					//double actual_distance = clusters.get(j).Dynamic_Time_Warping_distance_to(specific_day.get(i));
 					
 					if(actual_distance < current_closest_distance)
 					{
@@ -150,7 +150,8 @@ public class KMeans_clustering
 		{
 			Day_24d current_point = copy_of_data.poll();
 			
-			Cluster_KMeans new_canopy = new Cluster_KMeans("Canopy "+count);
+			//Cluster_KMeans new_canopy = new Cluster_KMeans("Canopy "+count);
+			Cluster_KMeans new_canopy = new Cluster_KMeans(String.valueOf(count));
 			new_canopy.addMembership(current_point);
 			
 			ArrayList<Day_24d> elements_to_remove_from_queue = new ArrayList<Day_24d>(); 
@@ -175,11 +176,13 @@ public class KMeans_clustering
 			
 			canopies.add(new_canopy);
 			
+			count++;
+			
 			for (Iterator iterator = elements_to_remove_from_queue.iterator(); iterator.hasNext();) 
 			{
 				Day_24d day_24d = (Day_24d) iterator.next();
 				copy_of_data.remove(day_24d);
-			}	
+			}
 		}
 		
 		ArrayList<Cluster_KMeans> centroids = new ArrayList<Cluster_KMeans>();
