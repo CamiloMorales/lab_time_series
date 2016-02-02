@@ -100,7 +100,7 @@ public class TimeSeries_Reducer extends Reducer<TimeSeries_nd_Centroid, TimeSeri
 			for (TimeSeries_nd_Centroid current_centroid : new_centroids_list)
 			{
 				out.append(current_centroid, new IntWritable(0));
-				System.out.println("New centroid: "+current_centroid.toString());
+				//System.out.println("New centroid: "+current_centroid.toString());
 			}
 		}
 	}

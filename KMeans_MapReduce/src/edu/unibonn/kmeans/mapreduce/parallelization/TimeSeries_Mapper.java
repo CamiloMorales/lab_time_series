@@ -25,7 +25,7 @@ public class TimeSeries_Mapper  extends Mapper<TimeSeries_nd_Centroid, TimeSerie
 		
 		Path centroids = new Path(conf.get("centroids.path"));
 		FileSystem fs = FileSystem.get(conf);
-		
+
 		try (SequenceFile.Reader reader = new SequenceFile.Reader(fs, centroids, conf))
 		{
 			TimeSeries_nd_Centroid key = new TimeSeries_nd_Centroid(dimensionality);
@@ -35,6 +35,8 @@ public class TimeSeries_Mapper  extends Mapper<TimeSeries_nd_Centroid, TimeSerie
 				TimeSeries_nd_Centroid current_centroid = new TimeSeries_nd_Centroid(key);
 				current_centroid.setCluster_id(key.getCluster_id());
 				centroids_list.add(current_centroid);
+				
+				//System.out.println("Added centroid:"+current_centroid.getCluster_id());
 			}
 		}
 	}
@@ -61,6 +63,14 @@ public class TimeSeries_Mapper  extends Mapper<TimeSeries_nd_Centroid, TimeSerie
 			}
 		}
 		
-		context.write(centroids_list.get(current_closest_cluster_index), value);
+		if(current_closest_cluster_index != -1)
+		{
+			//System.out.println("NUMBER OF CLUSTERS IN MAPPER: "+centroids_list.size());
+			context.write(centroids_list.get(current_closest_cluster_index), value);
+		}
+		else
+		{
+			System.out.println("WARNING!!! NUMBER OF CLUSTERS IN MAPPER: "+centroids_list.size());
+		}
 	}
 }

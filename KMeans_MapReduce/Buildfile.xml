@@ -1,0 +1,15 @@
+<project name="Lab_Clustering_Time_Series" basedir=".">
+	
+  <property name="JPGs" location="jpgs"/>
+  <property name="CSVs" location="csv_clusters_membership_output"/>
+  <property name="MapReduce_Output" location="files/clustering"/>
+	
+  <target name="Delete JPGs and CSVs" description="clean up">
+	  	<delete>	
+	  		<fileset dir="${JPGs}" includes="**/*"/>
+	  		<fileset dir="${CSVs}" includes="**/*"/>
+	  		<fileset dir="${MapReduce_Output}" includes="**/*"/>
+	  	</delete>
+  </target>
+	
+</project>
