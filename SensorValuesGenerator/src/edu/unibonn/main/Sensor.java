@@ -52,13 +52,13 @@ public class Sensor
 	
 	public void generate_measurements_from_to_regarding_type(LocalDateTime from, LocalDateTime to)
 	{
-		System.out.println("Generating measurements fo the sensor: "+ this.id + ", of type: "+ this.type +", from: "+ from +" - to: "+ to);
+		//System.out.println("Generating measurements fo the sensor: "+ this.id + ", of type: "+ this.type +", from: "+ from +" - to: "+ to);
 		
 		LocalDateTime current_time = from;
 		
 		while(current_time.isBefore(to)) 
 		{
-			System.out.println("Current time: "+current_time);
+			//System.out.println("Current time: "+current_time);
 			
 			Measurement current_measurement = SampleGenerator.getInstance().generateMeasurement(current_time, type);
 			this.measurements.add(current_measurement);

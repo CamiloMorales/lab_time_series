@@ -25,19 +25,22 @@ public class KMeans_clustering
 		{
 			ArrayList<Day_24d> current_points_24d = sensors.get(i).generate_24d_points();
 			points_24d.addAll(current_points_24d);
+			
+			double percentaje = (i+1.0)*100/sensors.size();
+        	System.out.println("Generating 24d points: "+ percentaje );
 		}
 		
 		//ArrayList<Day_24d> only_montags = filter_montags(points_24d);
 		ArrayList<Day_24d> specific_day = filter_day(points_24d, day);
 		
 		//1- We generate randomly (uniform) the initial clusters.
-		//ArrayList<Cluster_KMeans> clusters = generate_random_centroids(specific_day, k);
+		ArrayList<Cluster_KMeans> clusters = generate_random_centroids(specific_day, k);
 		
 		double T1 = 150; //200
 		double T2 = 100; //50
 		
-		ArrayList<Cluster_KMeans> clusters = generate_centroids_with_canopy(specific_day, T1, T2);	
-		k = clusters.size();
+		//ArrayList<Cluster_KMeans> clusters = generate_centroids_with_canopy(specific_day, T1, T2);	
+		//k = clusters.size();
 		
 		//2-Until we get no improvement (quality dont improve anymore), do:
 		double previous_total_clustering_squared_error = -1; //For initialization.
@@ -87,12 +90,16 @@ public class KMeans_clustering
 				}
 				
 				clusters.get(current_closest_cluster_index).addMembership(specific_day.get(i));
+				
+				System.out.println("Mapping: "+ (i+1.0)*100/specific_day.size()+"%");
 			}
 			
 			for (int i = 0; i < k; i++) //Iterate over all the clusters.
 			{
 				clusters.get(i).recalculatePositionOfCentroid(); //Means.
 				//clusters.get(i).recalculatePositionOfCentroid_DBA();
+				
+				System.out.println("Reducing: "+ (i+1.0)*100/k+"%");
 			}
 			
 			for (int i = 0; i < k; i++) //Iterate over all the clusters.
@@ -100,7 +107,8 @@ public class KMeans_clustering
 				actual_total_clustering_squared_error += clusters.get(i).getClusterSquareError(); //Calculate the new total clustering squared error.
 			}
 			
-			//total_iterations_to_converge++;
+			total_iterations_to_converge++;
+			System.out.println("Iteration: "+total_iterations_to_converge);
 		}
 
 		System.out.println("\n -KMeans execution FINISHED for k="+k+".\n -Quality measure (Total Cluster square error (within-cluster variation))= "+Math.sqrt(actual_total_clustering_squared_error)+". Total number of iterations to converge: "+ total_iterations_to_converge);

@@ -206,7 +206,7 @@ public class SampleGenerator
 
 	private static double generateSample(Cell_type workingArea, Segment_of_week workday, Segment_of_day morning)
 	{
-		int general_std_dev = 2;
+		int general_std_dev = 10;
 		
 		if(workingArea == Cell_type.WORKING_AREA)
 		{

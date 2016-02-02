@@ -1,5 +1,6 @@
 package edu.unibonn.main;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -29,14 +30,14 @@ public class ValuesGeneratorMain
 {
 	public static void main(String[] args) throws Exception
 	{
-		long initial_time = System.currentTimeMillis();
-		
+		System.out.println("STARTING!");
+
 		ArrayList<Sensor> sensors = new ArrayList<Sensor>();
 		
-		for (int i = 0; i < 18; i++)
-		{
-			sensors.add(new Sensor("Sensor_"+i));
-		}
+//		for (int i = 0; i < 18; i++)
+//		{
+//			sensors.add(new Sensor("Sensor_"+i));
+//		}
 		
 //		LocalDateTime from = LocalDateTime.of(2015, Month.OCTOBER, 26, 00, 00, 00);
 //		System.out.println("FROM:"+from);
@@ -46,7 +47,10 @@ public class ValuesGeneratorMain
 		
 		//new ValuesGeneratorMain().generateMesurements(from, to, sensors);
 		
-		String pathCSV = "input_data/real_data_time_series_Time_vs_Sensors.csv";
+		//String pathCSV = "input_data/real_data_time_series_Time_vs_Sensors.csv";		
+		//String pathCSV = "input_data/generation_3000000_1454389836463.csv";
+		//String pathCSV = "input_data/generation_300000_1454392111848.csv";
+		String pathCSV = "input_data/generation_600000_1454392454986.csv";
 		
 		boolean normalized = true;
 		
@@ -67,12 +71,12 @@ public class ValuesGeneratorMain
     
 		//KMEANS ##########################################################################################
 		
-		int temp_kmeans_or_dbscan = 1; //0-KMeans, 1-DBScan
+		int temp_kmeans_or_dbscan = 0; //0-KMeans, 1-DBScan
 		
 		if(temp_kmeans_or_dbscan == 0)
 		{
-			int min_k = 4;
-	        int max_k = 4;
+			int min_k = 15;
+	        int max_k = 15;
 
 	        int number_of_tries = 1;
 
@@ -80,6 +84,8 @@ public class ValuesGeneratorMain
 	        {
 	        	for (int i = 1; i <= number_of_tries; i++)
 	        	{
+	        		long initial_time = System.currentTimeMillis();
+	        		
 	        		ArrayList<Cluster_KMeans> clusters = new KMeans_clustering().cluster_KMeans_euclidean_24d_specific_day(sensors, from, to, current_k, DayOfWeek.MONDAY); //day = 1 Because real data we have is from a Monday.
 
 	        		long final_time = System.currentTimeMillis();
@@ -112,7 +118,7 @@ public class ValuesGeneratorMain
 	                	}                	
 					}
 	                
-	                exportToCVS_clusterMembership_KMeans(clusters, clustering_id);
+	                //exportToCVS_clusterMembership_KMeans(clusters, clustering_id);
 				}
 			}
 		}
@@ -246,8 +252,22 @@ public class ValuesGeneratorMain
 		{		
 			reader = new CSVReader(new FileReader(dataFilePath), ';');
 	
-			List<String[]> pre_matrix = reader.readAll();
-
+			List<String[]> pre_matrix = new ArrayList<String[]>();//reader.readAll();
+			
+			try(BufferedReader br = new BufferedReader(new FileReader(dataFilePath))) 
+			{
+			    int counter_i = 0;
+				for(String line; (line = br.readLine()) != null; )
+			    {
+			    	String[] current = line.split(";");
+			    	pre_matrix.add(current);
+			    	
+			    	double percentaje = (counter_i+1.0)*100/600000;
+	            	System.out.println("Reading file: "+ percentaje );
+			    	counter_i++;
+			    }
+			}
+			
 			int rows = pre_matrix.size();
 			int columns = pre_matrix.get(0).length;
 			
@@ -314,6 +334,9 @@ public class ValuesGeneratorMain
 				}
 								
 				return_matrix.add(current_sensor);
+				
+				double percentaje = ((i-1)+1.0)*100/rows;
+            	System.out.println("Loading data: "+ percentaje );
 			}
 			
 			//printMatrix(data_matrix);
@@ -336,23 +359,5 @@ public class ValuesGeneratorMain
 		}
 		
 		return return_matrix;
-	}
-
-	private void generateMesurements(LocalDateTime from, LocalDateTime to, ArrayList<Sensor> sensors)
-	{
-		for (int i = 0; (i+3) <= sensors.size() ; i=i+3) 
-		{
-			Sensor current_sensor_A = sensors.get(i);
-			current_sensor_A.setType(Cell_type.WORKING_AREA);
-			current_sensor_A.generate_measurements_from_to_regarding_type(from, to);
-			
-			Sensor current_sensor_B = sensors.get(i+1);
-			current_sensor_B.setType(Cell_type.RESIDENTIAL_AREA);
-			current_sensor_B.generate_measurements_from_to_regarding_type(from, to);
-			
-			Sensor current_sensor_C = sensors.get(i+2);
-			current_sensor_C.setType(Cell_type.RURAL_AREA);
-			current_sensor_C.generate_measurements_from_to_regarding_type(from, to);
-		}
 	}
 }
