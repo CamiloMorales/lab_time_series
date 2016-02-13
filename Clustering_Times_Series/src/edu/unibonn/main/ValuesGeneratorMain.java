@@ -34,49 +34,27 @@ public class ValuesGeneratorMain
 
 		ArrayList<Sensor> sensors = new ArrayList<Sensor>();
 		
-//		for (int i = 0; i < 18; i++)
-//		{
-//			sensors.add(new Sensor("Sensor_"+i));
-//		}
-		
-//		LocalDateTime from = LocalDateTime.of(2015, Month.OCTOBER, 26, 00, 00, 00);
-//		System.out.println("FROM:"+from);
-//		
-//		LocalDateTime to = LocalDateTime.of(2015, Month.NOVEMBER, 9, 00, 00, 00);
-//		System.out.println("TO:"+to);
-		
-		//new ValuesGeneratorMain().generateMesurements(from, to, sensors);
-		
-		//String pathCSV = "input_data/real_data_time_series_Time_vs_Sensors.csv";		
-		//String pathCSV = "input_data/generation_3000000_1454389836463.csv";
-		//String pathCSV = "input_data/generation_300000_1454392111848.csv";
-		String pathCSV = "input_data/generation_600000_1454392454986.csv";
+		String pathCSV = "generated_sensor_values/1.csv";
 		
 		boolean normalized = true;
 		
 		sensors = new ValuesGeneratorMain().loadDataCSV(pathCSV, normalized);
 		
-		LocalDateTime from = sensors.get(0).getMeasurements().get(0).getRecord_time();
+		LocalDateTime from = sensors.get(0).getInitial_record_time();
 		System.out.println("FROM:"+from);
 		
-		ArrayList<Measurement> max_measurement = sensors.get(sensors.size()-1).getMeasurements();		
-		LocalDateTime to = max_measurement.get(max_measurement.size()-1).getRecord_time();
-		System.out.println("TO:"+to);
+		int dimensions = sensors.get(0).getDimensions();
 		
-		//Plot Sensors data:
-//		final TimeSeriesPlotter demo = new TimeSeriesPlotter("Sensor Working areas", sensors);
-//        demo.pack();
-//        RefineryUtilities.centerFrameOnScreen(demo);
-//        demo.setVisible(true);
-    
+		System.out.println("TO:"+from.plusHours(dimensions-1));
+		
 		//KMEANS ##########################################################################################
 		
 		int temp_kmeans_or_dbscan = 0; //0-KMeans, 1-DBScan
 		
 		if(temp_kmeans_or_dbscan == 0)
 		{
-			int min_k = 15;
-	        int max_k = 15;
+			int min_k = 10;
+	        int max_k = 10;
 
 	        int number_of_tries = 1;
 
@@ -86,16 +64,15 @@ public class ValuesGeneratorMain
 	        	{
 	        		long initial_time = System.currentTimeMillis();
 	        		
-	        		ArrayList<Cluster_KMeans> clusters = new KMeans_clustering().cluster_KMeans_euclidean_24d_specific_day(sensors, from, to, current_k, DayOfWeek.MONDAY); //day = 1 Because real data we have is from a Monday.
+	        		ArrayList<Cluster_KMeans> clusters = new KMeans_clustering().cluster_KMeans_euclidean_d_dims(sensors, current_k); //day = 1 Because real data we have is from a Monday.
 
 	        		long final_time = System.currentTimeMillis();
 	        		
 	        		System.out.println("Execution took: "+((double)(final_time-initial_time)/1000));
 	        		
 	        		String clustering_id = "KMeans_k_"+current_k+ "_try_"+ i ;
-	        		//String clustering_id = "KMeans_k_"+current_k;
 	        		
-	                final TimeSeriesPlotter_KMeans demo_1 = new TimeSeriesPlotter_KMeans(clustering_id, clusters, from);
+	                final TimeSeriesPlotter_KMeans demo_1 = new TimeSeriesPlotter_KMeans(clustering_id, clusters);
 	                //demo_1.pack();
 	                //RefineryUtilities.centerFrameOnScreen(demo_1);
 	                //demo_1.setVisible(true);
@@ -111,7 +88,7 @@ public class ValuesGeneratorMain
 	                    	ArrayList<Cluster_KMeans> current_cluster = new ArrayList<Cluster_KMeans>();
 	                    	current_cluster.add(clusters.get(j));
 	                    	
-	                    	final TimeSeriesPlotter_KMeans demo_2 = new TimeSeriesPlotter_KMeans(separate_clustering_id_, current_cluster, from);
+	                    	final TimeSeriesPlotter_KMeans demo_2 = new TimeSeriesPlotter_KMeans(separate_clustering_id_, current_cluster);
 	                        //demo_2.pack();
 	                        //RefineryUtilities.centerFrameOnScreen(demo_2);
 	                        //demo_2.setVisible(true);
@@ -129,7 +106,7 @@ public class ValuesGeneratorMain
 	        int epsilon = 100;
 	        int minPts = 8;
 	
-			ArrayList<Cluster_DBScan> clusters = new DBScan_clustering().cluster_DBScan_euclidean_24d_specific_day(sensors, from, to, epsilon, minPts, DayOfWeek.MONDAY); //day = 1 Because real data we have is from a Monday.
+			ArrayList<Cluster_DBScan> clusters = new DBScan_clustering().cluster_DBScan_euclidean_d_dims(sensors, epsilon, minPts); //day = 1 Because real data we have is from a Monday.
 	
 			String dbscan_clustering_id = "DBScan_epsilon_"+epsilon+"_minPts_"+minPts;
 			
@@ -183,7 +160,7 @@ public class ValuesGeneratorMain
 			{
 				Cluster_KMeans current_cluster = clusters.get(i);
 				
-				ArrayList<Day_24d> all_members = current_cluster.getMembership();
+				ArrayList<Sensor> all_members = current_cluster.getMembership();
 				
 				for (int j = 0; j < all_members.size(); j++)
 				{
@@ -224,7 +201,7 @@ public class ValuesGeneratorMain
 			{
 				Cluster_DBScan current_cluster = clusters.get(i);
 				
-				ArrayList<Day_24d> all_members = current_cluster.getMembership();
+				ArrayList<Sensor> all_members = current_cluster.getMembership();
 				
 				for (int j = 0; j < all_members.size(); j++)
 				{
@@ -262,7 +239,7 @@ public class ValuesGeneratorMain
 			    	String[] current = line.split(";");
 			    	pre_matrix.add(current);
 			    	
-			    	double percentaje = (counter_i+1.0)*100/600000;
+			    	double percentaje = (counter_i+1.0)*100/120000;
 	            	System.out.println("Reading file: "+ percentaje );
 			    	counter_i++;
 			    }
@@ -271,21 +248,24 @@ public class ValuesGeneratorMain
 			int rows = pre_matrix.size();
 			int columns = pre_matrix.get(0).length;
 			
+			int dimensions = columns-1;
+			
 			String[] times = pre_matrix.get(0);
+
+			LocalDateTime initial_record_time = LocalDateTime.parse(times[1], DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss"));
 
 			for (int i = 1; i < rows; i++) 
 			{		
 				String[] actual_row = pre_matrix.get(i);
 
-				Sensor current_sensor = new Sensor(actual_row[0]);
+				Sensor current_sensor = new Sensor(actual_row[0], dimensions, initial_record_time);
 				
 				if(!normalized)
 				{
 					for (int j = 1; j < columns; j++)
 					{
 						double current_erlang = Double.valueOf(actual_row[j].replace(",", "."));
-						LocalDateTime current_record_time = LocalDateTime.parse(times[j], DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss"));
-						current_sensor.addMeasurement(new Measurement(current_record_time, current_erlang));
+						current_sensor.addMeasurement(j-1, current_erlang);
 					}
 				}
 				else
@@ -295,7 +275,7 @@ public class ValuesGeneratorMain
 					//2. Find the highest value, that is going to be 100.
 					//3. Escalate all other values between 0 and 1.
 					
-					double[] absolute_values = new double[24];
+					double[] absolute_values = new double[dimensions];
 					double current_max = 0;
 					
 					for (int j = 0; j < columns-1; j++)
@@ -315,16 +295,14 @@ public class ValuesGeneratorMain
 						for (int j = 0; j < absolute_values.length; j++)
 						{
 							double current_erlang_normalized = (absolute_values[j]*100)/current_max;
-							LocalDateTime current_record_time = LocalDateTime.parse(times[j+1], DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss"));
-							current_sensor.addMeasurement(new Measurement(current_record_time, current_erlang_normalized));
+							current_sensor.addMeasurement(j, current_erlang_normalized);
 						}
 					}
 					else if(current_max == 0)
 					{
 						for (int j = 0; j < absolute_values.length; j++)
 						{
-							LocalDateTime current_record_time = LocalDateTime.parse(times[j+1], DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss"));
-							current_sensor.addMeasurement(new Measurement(current_record_time, 0));
+							current_sensor.addMeasurement(j, 0);
 						}
 					}
 					else

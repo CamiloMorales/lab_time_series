@@ -77,131 +77,79 @@ import org.jfree.util.PrintStreamLogTarget;
 
 import edu.unibonn.clustering.dbscan.Cluster_DBScan;
 import edu.unibonn.clustering.kmeans.Cluster_KMeans;
-import edu.unibonn.main.Day_24d;
-import edu.unibonn.main.Measurement;
 import edu.unibonn.main.Sensor;
 
-/**
- * An example of a time series chart.  For the most part, default settings are used, except that
- * the renderer is modified to show filled shapes (as well as lines) at each data point.
- *
- */
-public class TimeSeriesPlotter_DBScan extends ApplicationFrame
-{    
-    public TimeSeriesPlotter_DBScan(String title, ArrayList<Cluster_DBScan> clusters, LocalDateTime from)
+public class TimeSeriesPlotter_Sensors extends ApplicationFrame
+{
+    public TimeSeriesPlotter_Sensors(String title, ArrayList<Sensor> sensors)
     {
     	super(title);
-        final XYDataset dataset = createDataset(clusters, from);     
-        //final XYDataset dataset_cetroids = createDataset_centroids(clusters, from); 
-        final JFreeChart chart = createChart(dataset, clusters);
+        final XYDataset dataset = createDataset(sensors);
+        final JFreeChart chart = createChart(dataset);
         final ChartPanel chartPanel = new ChartPanel(chart);
-        
-        chartPanel.setPreferredSize(new java.awt.Dimension(2560, 1600));
+        chartPanel.setPreferredSize(new java.awt.Dimension(500, 270));
         chartPanel.setMouseZoomable(true, false);
         setContentPane(chartPanel);
-        
-        try
-        {
-			ChartUtilities.saveChartAsJPEG(new File("./jpgs/"+title+".jpg"), chart, 1920, 1200);
-		} 
-        catch (Exception e)
-        {
-			e.printStackTrace();
-		}
 	}
+    
+    private JFreeChart createChart(final XYDataset dataset) {
 
-//	public TimeSeriesPlotter(String title, ArrayList<Cluster_DBScan> clusters, LocalDateTime from)
-//	{
-//		super(title);
-//		final XYDataset dataset = createDataset(clusters, from);     
-//		final JFreeChart chart = createChart(dataset, clusters);
-//		final ChartPanel chartPanel = new ChartPanel(chart);
-//		
-//		chartPanel.setPreferredSize(new java.awt.Dimension(2560, 1600));
-//		chartPanel.setMouseZoomable(true, false);
-//		setContentPane(chartPanel);
-//		  
-//		try
-//		{
-//			ChartUtilities.saveChartAsJPEG(new File("./jpgs/"+title+".jpg"), chart, 1920, 1200);
-//		} 
-//		catch (IOException e)
-//		{
-//			e.printStackTrace();
-//		}
-//	}
+        final JFreeChart chart = ChartFactory.createTimeSeriesChart(
+            "Sensors",
+            "Time", "Erlang",
+            dataset,
+            false,
+            true,
+            false
+        );
 
-//	private XYDataset createDataset(ArrayList<Cluster_DBScan> clusters, LocalDateTime from)
-//	{
-//		final TimeSeriesCollection dataset = new TimeSeriesCollection();
-//		
-//		for (int i = 0; i < clusters.size(); i++)
-//		{
-//			Cluster_DBScan current_cluster = clusters.get(i);	
-//			ArrayList<Day_24d> member_time_series = current_cluster.getMembership();
-//
-//			for (Iterator iterator = member_time_series.iterator(); iterator.hasNext();)
-//			{
-//				final TimeSeries s1 = new TimeSeries("Cluster_"+current_cluster.getCluster_id(), Hour.class);
-//				
-//				Day_24d current_series = (Day_24d) iterator.next();
-//				
-//				for (int j = 0; j < 24; j++)
-//				{
-//					s1.add(new Hour( j, from.getDayOfMonth(), from.getMonthValue(), from.getYear() ), current_series.getMeasurement(j));
-//				}
-//
-//				dataset.addSeries(s1);
-//			}
-//		}
-//
-//        dataset.setDomainIsPointsInTime(true);
-//
-//        return dataset;
-//	}
+        chart.setBackgroundPaint(Color.white);
 
-    private XYDataset createDataset_centroids(ArrayList<Cluster_KMeans> clusters, LocalDateTime from)
+//        final StandardLegend sl = (StandardLegend) chart.getLegend();
+//        sl.setDisplaySeriesShapes(true);
+
+        final XYPlot plot = chart.getXYPlot();
+        plot.setBackgroundPaint(Color.lightGray);
+        plot.setDomainGridlinePaint(Color.white);
+        plot.setRangeGridlinePaint(Color.white);
+//        plot.setAxisOffset(new Spacer(Spacer.ABSOLUTE, 5.0, 5.0, 5.0, 5.0));
+        plot.setDomainCrosshairVisible(true);
+        plot.setRangeCrosshairVisible(true);
+        
+        final XYItemRenderer renderer = plot.getRenderer();
+        if (renderer instanceof StandardXYItemRenderer) {
+            final StandardXYItemRenderer rr = (StandardXYItemRenderer) renderer;
+            //rr.setPlotShapes(true);
+            rr.setShapesFilled(true);
+            rr.setItemLabelsVisible(true);
+        }
+        
+        final DateAxis axis = (DateAxis) plot.getDomainAxis();
+        axis.setDateFormatOverride(new SimpleDateFormat("dd-MM-yyyy hh:mm"));
+        
+        return chart;
+
+    }
+    
+	private XYDataset createDataset(ArrayList<Cluster_KMeans> clusters, LocalDateTime from)
 	{
 		final TimeSeriesCollection dataset = new TimeSeriesCollection();
 		
 		for (int i = 0; i < clusters.size(); i++)
 		{
 			Cluster_KMeans current_cluster = clusters.get(i);	
-			double[] center_of_mass = current_cluster.getCenter_of_mass();
-			
-			final TimeSeries s1 = new TimeSeries("Cluster_"+current_cluster.getCluster_id(), Hour.class);
-
-			for (int j = 0; j < 24; j++)
-			{
-				s1.add(new Hour( j, from.getDayOfMonth(), from.getMonthValue(), from.getYear() ), center_of_mass[j]);
-			}
-			
-			dataset.addSeries(s1);
-		}
-		
-        dataset.setDomainIsPointsInTime(true);
-
-        return dataset;
-	}
-    
-	private XYDataset createDataset(ArrayList<Cluster_DBScan> clusters, LocalDateTime from)
-	{
-		final TimeSeriesCollection dataset = new TimeSeriesCollection();
-		
-		for (int i = 0; i < clusters.size(); i++)
-		{
-			Cluster_DBScan current_cluster = clusters.get(i);	
-			ArrayList<Day_24d> member_time_series = current_cluster.getMembership();
+			ArrayList<Sensor> member_time_series = current_cluster.getMembership();
 
 			for (Iterator iterator = member_time_series.iterator(); iterator.hasNext();)
 			{
 				final TimeSeries s1 = new TimeSeries("Cluster_"+current_cluster.getCluster_id(), Hour.class);
 				
-				Day_24d current_series = (Day_24d) iterator.next();
+				Sensor current_series = (Sensor) iterator.next();
 				
-				for (int j = 0; j < 24; j++)
+				for (int j = 0; j < current_series.getDimensions(); j++)
 				{
-					s1.add(new Hour( j, from.getDayOfMonth(), from.getMonthValue(), from.getYear() ), current_series.getMeasurement(j));
+					LocalDateTime current_record_time = current_series.getInitial_record_time().plusHours(j);
+					s1.add(new Hour( current_record_time.getHour(), current_record_time.getDayOfMonth(), current_record_time.getMonthValue(), current_record_time.getYear() ), current_series.getMeasurement(j));
 				}
 
 				dataset.addSeries(s1);
@@ -218,20 +166,15 @@ public class TimeSeriesPlotter_DBScan extends ApplicationFrame
 		final TimeSeriesCollection dataset = new TimeSeriesCollection();
 		
 		for (int i = 0; i < sensors.size(); i++)
-		//for (int i = 0; i < 100; i++)
 		{
 			Sensor current_sensor = sensors.get(i);	
-			ArrayList<Measurement> current_measurements = current_sensor.getMeasurements();
 			
 			final TimeSeries s1 = new TimeSeries("Sensor "+i, Hour.class);
 
-			for (int j = 0; j < current_measurements.size(); j++)
+			for (int j = 0; j < current_sensor.getDimensions(); j++)
 			{
-				Measurement current_measurement = current_measurements.get(j);
-				
-				LocalDateTime current_time = current_measurement.getRecord_time();
-				
-				s1.add(new Hour( current_time.getHour(), current_time.getDayOfMonth(), current_time.getMonthValue(), current_time.getYear() ), current_measurement.getErlang());
+				LocalDateTime current_record_time = current_sensor.getInitial_record_time().plusHours(j);
+				s1.add(new Hour( current_record_time.getHour(), current_record_time.getDayOfMonth(), current_record_time.getMonthValue(), current_record_time.getYear() ), current_sensor.getMeasurement(j));
 			}
 			
 			dataset.addSeries(s1);
@@ -242,18 +185,9 @@ public class TimeSeriesPlotter_DBScan extends ApplicationFrame
         return dataset;
 	}
 
-	/**
-     * Creates a chart.
-     * 
-     * @param dataset  a dataset.
-	 * @param clusters 
-     * 
-     * @return A chart.
-     */
-    private JFreeChart createChart(final XYDataset dataset, ArrayList<Cluster_DBScan> clusters)
+    private JFreeChart createChart(final XYDataset dataset, final XYDataset dataset_centroids, ArrayList<Cluster_KMeans> clusters)
     {
-
-        final JFreeChart chart = ChartFactory.createTimeSeriesChart(
+    	final JFreeChart chart = ChartFactory.createTimeSeriesChart(
             "Sensors",
             "Time", "Erlang",
             dataset,
@@ -261,7 +195,7 @@ public class TimeSeriesPlotter_DBScan extends ApplicationFrame
             true, //t
             false //f
         );
-
+        
         ChartUtilities.applyCurrentTheme(chart);
         
         //chart.setBackgroundPaint(Color.white);
@@ -292,8 +226,8 @@ public class TimeSeriesPlotter_DBScan extends ApplicationFrame
         //for (int i = 0; i < clusters.size(); i++)
         for (int i = 0; (i < 11) && (i < clusters.size()); i++)
 		{
-			Cluster_DBScan current_cluster = clusters.get(i);	
-			ArrayList<Day_24d> member_time_series = current_cluster.getMembership();
+			Cluster_KMeans current_cluster = clusters.get(i);	
+			ArrayList<Sensor> member_time_series = current_cluster.getMembership();
 			
 			for (int j = 0; j < member_time_series.size(); j++)
 			{
@@ -304,13 +238,24 @@ public class TimeSeriesPlotter_DBScan extends ApplicationFrame
         
         final DateAxis axis = (DateAxis) plot.getDomainAxis();    
         axis.setDateFormatOverride(new SimpleDateFormat("HH:mm"));
+
+        //final ValueAxis axis_y = plot.getRangeAxis();
+        //axis_y.setRange(0, 20);
         
-        final ValueAxis axis_y = plot.getRangeAxis();
-        axis_y.setRange(0, 100);
+        plot.setDataset(1,dataset_centroids);
+        plot.setRenderer(1, new StandardXYItemRenderer());
+        
+        for (int i = 0; (i < clusters.size()); i++)
+		{
+        	//plot.getRenderer(1).setSeriesPaint(i, getColor(i));
+        	plot.getRenderer(1).setSeriesPaint(i, Color.BLACK);
+        	plot.getRenderer(1).setSeriesStroke(i, new BasicStroke(3.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND,1.0f, new float[] {10.0f, 6.0f}, 0.0f));
+		}
+
+        plot.setDatasetRenderingOrder(DatasetRenderingOrder.FORWARD);
         
         return chart;
-
-    }
+    }  
     
     private Paint getColor(int color_number) 
     {
@@ -340,6 +285,30 @@ public class TimeSeriesPlotter_DBScan extends ApplicationFrame
 	                 break;
 	        case 10: curr_color = Color.BLACK;
 	                 break;
+//	        case 11: curr_color = Color.YELLOW;
+//	                 break;
+//	        case 12: curr_color = Color.BLACK;
+//	                 break;
+//	        case 13: curr_color = Color.BLACK;
+//            		break;
+//	        case 14: curr_color = Color.BLACK;
+//            		break;
+//	        case 15: curr_color = Color.BLACK;
+//    				break;
+//	        case 16: curr_color = Color.BLACK;
+//    				break;
+//	        case 17: curr_color = Color.BLACK;
+//    				break;
+//	        case 18: curr_color = Color.BLACK;
+//    				break;
+//	        case 20: curr_color = Color.BLACK;
+//    				break;
+//	        case 21: curr_color = Color.BLACK;
+//    				break;
+//	        case 22: curr_color = Color.BLACK;
+//    				break;
+//	        case 23: curr_color = Color.BLACK;
+//    				break;
 	        default: curr_color = Color.WHITE;
 	                 break;
     	}

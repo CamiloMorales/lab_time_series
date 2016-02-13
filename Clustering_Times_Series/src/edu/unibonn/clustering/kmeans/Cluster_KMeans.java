@@ -1,8 +1,9 @@
 package edu.unibonn.clustering.kmeans;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 
-import edu.unibonn.main.Day_24d;
+import edu.unibonn.main.Sensor;
 
 public class Cluster_KMeans
 {
@@ -10,23 +11,27 @@ public class Cluster_KMeans
 	
 	private String cluster_id;
 	private double[] center_of_mass;
-	private ArrayList<Day_24d> membership;
+	private int dimensions;
+	private ArrayList<Sensor> membership;
 	
-	public Cluster_KMeans(String cluster_id) {
-		this.cluster_id = cluster_id;
-		this.center_of_mass = new double[24];
-		this.membership = new ArrayList<Day_24d>();
-	}
-	
-	public Cluster_KMeans(String cluster_id, Day_24d day_24d)
+	public Cluster_KMeans(String cluster_id, int dimensions)
 	{
 		this.cluster_id = cluster_id;
-		this.membership = new ArrayList<Day_24d>();
-		this.center_of_mass = new double[24];
+		this.dimensions = dimensions;
+		this.center_of_mass = new double[dimensions];
+		this.membership = new ArrayList<Sensor>();
+	}
+	
+	public Cluster_KMeans(String cluster_id, Sensor point_d, int dimensions)
+	{
+		this.cluster_id = cluster_id;
+		this.membership = new ArrayList<Sensor>();
+		this.dimensions = dimensions;
+		this.center_of_mass = new double[dimensions];
 		
-		for (int i = 0; i < 24; i++)
+		for (int i = 0; i < dimensions; i++)
 		{
-			this.center_of_mass[i] = day_24d.getMeasurement(i);
+			this.center_of_mass[i] = point_d.getMeasurement(i);
 		}
 	}
 
@@ -42,27 +47,27 @@ public class Cluster_KMeans
 	public void setCenter_of_mass(double[] center_of_mass) {
 		this.center_of_mass = center_of_mass;
 	}
-	public ArrayList<Day_24d> getMembership() {
+	public ArrayList<Sensor> getMembership() {
 		return membership;
 	}
-	public void setMembership(ArrayList<Day_24d> membership) {
+	public void setMembership(ArrayList<Sensor> membership) {
 		this.membership = membership;
 	}
 
 	public void reset_membership_vector()
 	{
-		this.membership = new ArrayList<Day_24d>();
+		this.membership = new ArrayList<Sensor>();
 	}
 
-	public double euclidean_distance_to(Day_24d day_24d)
+	public double euclidean_distance_to(Sensor point_d)
 	{
 		double final_distance = 0;
 
 		double sum_of_squared_differences = 0;
 		
-		for (int i = 0; i < 24; i++)
+		for (int i = 0; i < point_d.getDimensions(); i++)
 		{	
-			sum_of_squared_differences += Math.pow(this.center_of_mass[i]-day_24d.getMeasurement(i), 2); //Sum of the square difference dimension by dimension.				
+			sum_of_squared_differences += Math.pow(this.center_of_mass[i]-point_d.getMeasurement(i), 2); //Sum of the square difference dimension by dimension.				
 		}
 		
 		final_distance = Math.sqrt(sum_of_squared_differences);
@@ -70,37 +75,37 @@ public class Cluster_KMeans
 		return final_distance;
 	}
 	
-	public double Dynamic_Time_Warping_distance_to(Day_24d to_point)
+	public double Dynamic_Time_Warping_distance_to(Sensor to_point)
 	{	
-		double[][] squared_differences = new double[24][24];
+		double[][] squared_differences = new double[to_point.getDimensions()][to_point.getDimensions()];
 		
-		for (int x = 0; x < 24; x++)
+		for (int x = 0; x < to_point.getDimensions(); x++)
 		{	
-			for (int y = 0; y < 24; y++)
+			for (int y = 0; y < to_point.getDimensions(); y++)
 			{	
 				squared_differences[x][y] = Math.pow(this.center_of_mass[x]-to_point.getMeasurement(y), 2);
 			}					
 		}
 
-		double[][] accumulated_cost_matrix = new double[24][24];
+		double[][] accumulated_cost_matrix = new double[to_point.getDimensions()][to_point.getDimensions()];
 		accumulated_cost_matrix[0][0] = squared_differences[0][0];
 
 		//First the first row
-		for (int y = 1; y < 24; y++)
+		for (int y = 1; y < to_point.getDimensions(); y++)
 		{	
 			accumulated_cost_matrix[0][y] = squared_differences[0][y] + accumulated_cost_matrix[0][y-1];
 		}
 		
 		//Then the first Column
-		for (int x = 1; x < 24; x++)
+		for (int x = 1; x < to_point.getDimensions(); x++)
 		{	
 			accumulated_cost_matrix[x][0] = squared_differences[x][0] + accumulated_cost_matrix[x-1][0];
 		}
 
 		//Then the rest
-		for (int x = 1; x < 24; x++)
+		for (int x = 1; x < to_point.getDimensions(); x++)
 		{	
-			for (int y = 1; y < 24; y++)
+			for (int y = 1; y < to_point.getDimensions(); y++)
 			{	
 				double diagonal = accumulated_cost_matrix[x-1][y-1];
 				double up = accumulated_cost_matrix[x][y-1];
@@ -110,23 +115,23 @@ public class Cluster_KMeans
 			}
 		}
 		
-		return Math.sqrt(accumulated_cost_matrix[23][23]);
+		return Math.sqrt(accumulated_cost_matrix[to_point.getDimensions()-1][to_point.getDimensions()-1]);
 	}
 
-	public void addMembership(Day_24d day_24d)
+	public void addMembership(Sensor point_d)
 	{
-		this.membership.add(day_24d);
+		this.membership.add(point_d);
 	}
 
 	public void recalculatePositionOfCentroid()
 	{
-		double[] sum_values_each_dimension = new double[24];
+		double[] sum_values_each_dimension = new double[this.dimensions];
 		int number_of_points_in_cluster = this.membership.size();//just for readability.
 		
 		if(number_of_points_in_cluster > 0)
 		{
 			//Initialization
-			for (int j = 0; j < 24; j++)
+			for (int j = 0; j < this.dimensions; j++)
 			{
 				sum_values_each_dimension[j] = 0;
 			}
@@ -134,15 +139,15 @@ public class Cluster_KMeans
 			//Sum the values of each point in each dimension and divide by the number of points.
 			for (int i = 0; i < number_of_points_in_cluster; i++)
 			{	
-				Day_24d current_member = this.membership.get(i);
+				Sensor current_member = this.membership.get(i);
 				
-				for (int j = 0; j < 24; j++)
+				for (int j = 0; j < this.dimensions; j++)
 				{
 					sum_values_each_dimension[j] += current_member.getMeasurement(j);
 				}				
 			}
 			
-			for (int i = 0; i < 24; i++)
+			for (int i = 0; i < this.dimensions; i++)
 			{
 				center_of_mass[i] = sum_values_each_dimension[i]/number_of_points_in_cluster;
 			}
@@ -157,7 +162,7 @@ public class Cluster_KMeans
 		//Sum the values of each point in each dimension and divide by the number of points.
 		for (int i = 0; i < number_of_points_in_cluster; i++)
 		{	
-			Day_24d current_member = this.membership.get(i);
+			Sensor current_member = this.membership.get(i);
 			total_squared_error += Math.pow(euclidean_distance_to(current_member), 2);			
 			//total_squared_error += Math.pow(Dynamic_Time_Warping_distance_to(current_member), 2);
 		}
@@ -171,33 +176,33 @@ public class Cluster_KMeans
 		
 		for (int i = 0; i < tupleAssociation.length; i++)
 		{
-			tupleAssociation[i] = new ArrayList<Double>(24);
+			tupleAssociation[i] = new ArrayList<Double>(this.dimensions);
 		}
 		
 		for (int j = 0; j < membership.size(); j++)
 		{
-			Day_24d current_member = membership.get(j);
-			double[][] squared_differences = new double[24][24];
+			Sensor current_member = membership.get(j);
+			double[][] squared_differences = new double[this.dimensions][this.dimensions];
 			
-			for (int x = 0; x < 24; x++)
+			for (int x = 0; x < this.dimensions; x++)
 			{	
-				for (int y = 0; y < 24; y++)
+				for (int y = 0; y < this.dimensions; y++)
 				{	
 					squared_differences[x][y] = Math.pow(this.center_of_mass[x]-current_member.getMeasurement(y), 2);
 				}					
 			}
 
-			double[][] accumulated_cost_matrix = new double[24][24];
+			double[][] accumulated_cost_matrix = new double[this.dimensions][this.dimensions];
 			accumulated_cost_matrix[0][0] = squared_differences[0][0];
 					
-			DTW_path_move[][] path_matrix = new DTW_path_move[24][24];
+			DTW_path_move[][] path_matrix = new DTW_path_move[this.dimensions][this.dimensions];
 			path_matrix[0][0] = DTW_path_move.INITIAL;
 			
-			int[][] optimal_path_length = new int[24][24];
+			int[][] optimal_path_length = new int[this.dimensions][this.dimensions];
 			optimal_path_length[0][0] = 0;
 
 			//First the first row
-			for (int y = 1; y < 24; y++)
+			for (int y = 1; y < this.dimensions; y++)
 			{	
 				accumulated_cost_matrix[0][y] = squared_differences[0][y] + accumulated_cost_matrix[0][y-1];
 				path_matrix[0][y] = DTW_path_move.UP;
@@ -205,7 +210,7 @@ public class Cluster_KMeans
 			}
 			
 			//Then the first Column
-			for (int x = 1; x < 24; x++)
+			for (int x = 1; x < this.dimensions; x++)
 			{	
 				accumulated_cost_matrix[x][0] = squared_differences[x][0] + accumulated_cost_matrix[x-1][0];
 				path_matrix[x][0] = DTW_path_move.LEFT;
@@ -213,9 +218,9 @@ public class Cluster_KMeans
 			}
 
 			//Then the rest
-			for (int x = 1; x < 24; x++)
+			for (int x = 1; x < this.dimensions; x++)
 			{	
-				for (int y = 1; y < 24; y++)
+				for (int y = 1; y < this.dimensions; y++)
 				{	
 					double diagonal = accumulated_cost_matrix[x-1][y-1];
 					double up = accumulated_cost_matrix[x][y-1];
@@ -245,10 +250,10 @@ public class Cluster_KMeans
 				}
 			}
 			
-			int length_optimal_path = optimal_path_length[24-1][24-1];
+			int length_optimal_path = optimal_path_length[this.dimensions-1][this.dimensions-1];
 			
-			int dimensions_of_centroid = 24-1;
-			int dimensions_of_series = 24-1;
+			int dimensions_of_centroid = this.dimensions-1;
+			int dimensions_of_series = this.dimensions-1;
 			
 			for (int i = length_optimal_path; i >= 0; i--)
 			{
@@ -283,5 +288,15 @@ public class Cluster_KMeans
 			
 			center_of_mass[i] = (double) current_count/current_tuple_association.size();
 		}
+	}
+	
+	public int getDimensionality()
+	{
+		return this.membership.get(0).getDimensions();
+	}
+
+	public LocalDateTime getInitial_record_time()
+	{
+		return this.membership.get(0).getInitial_record_time();
 	}
 }

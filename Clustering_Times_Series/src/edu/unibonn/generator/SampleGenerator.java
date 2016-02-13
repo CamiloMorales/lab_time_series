@@ -4,7 +4,6 @@ import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.util.Random;
 
-import edu.unibonn.main.Measurement;
 import edu.unibonn.main.Sensor.Cell_type;
 
 public class SampleGenerator
@@ -60,7 +59,7 @@ public class SampleGenerator
 		return instance;
 	}
 	
-	public static Measurement generateMeasurement(LocalDateTime current_time, Cell_type type)
+	public static double generateMeasurement(LocalDateTime current_time, Cell_type type)
 	{
 		if(type == Cell_type.WORKING_AREA)
 		{
@@ -72,18 +71,15 @@ public class SampleGenerator
 				
 				if(segment_of_day == 0)
 				{
-					double sample = generateSample(Cell_type.WORKING_AREA, Segment_of_week.WORKDAY, Segment_of_day.MORNING); 
-					return new Measurement(current_time, sample);
+					return generateSample(Cell_type.WORKING_AREA, Segment_of_week.WORKDAY, Segment_of_day.MORNING); 
 				}
 				else if(segment_of_day == 1)
 				{
-					double sample = generateSample(Cell_type.WORKING_AREA, Segment_of_week.WORKDAY, Segment_of_day.AFTERNOON); 
-					return new Measurement(current_time, sample);
+					return generateSample(Cell_type.WORKING_AREA, Segment_of_week.WORKDAY, Segment_of_day.AFTERNOON); 
 				}
 				else if(segment_of_day == 2)
 				{
-					double sample = generateSample(Cell_type.WORKING_AREA, Segment_of_week.WORKDAY, Segment_of_day.NIGHT); 
-					return new Measurement(current_time, sample);
+					return generateSample(Cell_type.WORKING_AREA, Segment_of_week.WORKDAY, Segment_of_day.NIGHT); 
 				}
 			}
 			else //Weekend
@@ -93,18 +89,15 @@ public class SampleGenerator
 				
 				if(segment_of_day == 0)
 				{
-					double sample = generateSample(Cell_type.WORKING_AREA, Segment_of_week.WEEKEND, Segment_of_day.NIGHT); 
-					return new Measurement(current_time, sample);
+					return generateSample(Cell_type.WORKING_AREA, Segment_of_week.WEEKEND, Segment_of_day.NIGHT); 
 				}
 				else if(segment_of_day == 1)
 				{
-					double sample = generateSample(Cell_type.WORKING_AREA, Segment_of_week.WEEKEND, Segment_of_day.NIGHT); 
-					return new Measurement(current_time, sample);
+					return generateSample(Cell_type.WORKING_AREA, Segment_of_week.WEEKEND, Segment_of_day.NIGHT); 
 				}
 				else if(segment_of_day == 2)
 				{
-					double sample = generateSample(Cell_type.WORKING_AREA, Segment_of_week.WEEKEND, Segment_of_day.NIGHT); 
-					return new Measurement(current_time, sample);
+					return generateSample(Cell_type.WORKING_AREA, Segment_of_week.WEEKEND, Segment_of_day.NIGHT); 
 				}
 			}
 		}
@@ -118,18 +111,15 @@ public class SampleGenerator
 				
 				if(segment_of_day == 0)
 				{
-					double sample = generateSample(Cell_type.RESIDENTIAL_AREA, Segment_of_week.WORKDAY, Segment_of_day.MORNING); 
-					return new Measurement(current_time, sample);
+					return generateSample(Cell_type.RESIDENTIAL_AREA, Segment_of_week.WORKDAY, Segment_of_day.MORNING); 
 				}
 				else if(segment_of_day == 1)
 				{
-					double sample = generateSample(Cell_type.RESIDENTIAL_AREA, Segment_of_week.WORKDAY, Segment_of_day.AFTERNOON); 
-					return new Measurement(current_time, sample);
+					return generateSample(Cell_type.RESIDENTIAL_AREA, Segment_of_week.WORKDAY, Segment_of_day.AFTERNOON); 
 				}
 				else if(segment_of_day == 2)
 				{
-					double sample = generateSample(Cell_type.RESIDENTIAL_AREA, Segment_of_week.WORKDAY, Segment_of_day.NIGHT); 
-					return new Measurement(current_time, sample);
+					return generateSample(Cell_type.RESIDENTIAL_AREA, Segment_of_week.WORKDAY, Segment_of_day.NIGHT); 
 				}
 			}
 			else //Weekend
@@ -139,18 +129,15 @@ public class SampleGenerator
 				
 				if(segment_of_day == 0)
 				{
-					double sample = generateSample(Cell_type.RESIDENTIAL_AREA, Segment_of_week.WEEKEND, Segment_of_day.NIGHT); 
-					return new Measurement(current_time, sample);
+					return generateSample(Cell_type.RESIDENTIAL_AREA, Segment_of_week.WEEKEND, Segment_of_day.NIGHT); 
 				}
 				else if(segment_of_day == 1)
 				{
-					double sample = generateSample(Cell_type.RESIDENTIAL_AREA, Segment_of_week.WEEKEND, Segment_of_day.NIGHT); 
-					return new Measurement(current_time, sample);
+					return generateSample(Cell_type.RESIDENTIAL_AREA, Segment_of_week.WEEKEND, Segment_of_day.NIGHT); 
 				}
 				else if(segment_of_day == 2)
 				{
-					double sample = generateSample(Cell_type.RESIDENTIAL_AREA, Segment_of_week.WEEKEND, Segment_of_day.NIGHT); 
-					return new Measurement(current_time, sample);
+					return generateSample(Cell_type.RESIDENTIAL_AREA, Segment_of_week.WEEKEND, Segment_of_day.NIGHT); 
 				}
 			}
 		}
@@ -164,18 +151,15 @@ public class SampleGenerator
 				
 				if(segment_of_day == 0)
 				{
-					double sample = generateSample(Cell_type.RURAL_AREA, Segment_of_week.WORKDAY, Segment_of_day.MORNING); 
-					return new Measurement(current_time, sample);
+					return generateSample(Cell_type.RURAL_AREA, Segment_of_week.WORKDAY, Segment_of_day.MORNING); 
 				}
 				else if(segment_of_day == 1)
 				{
-					double sample = generateSample(Cell_type.RURAL_AREA, Segment_of_week.WORKDAY, Segment_of_day.AFTERNOON); 
-					return new Measurement(current_time, sample);
+					return generateSample(Cell_type.RURAL_AREA, Segment_of_week.WORKDAY, Segment_of_day.AFTERNOON); 
 				}
 				else if(segment_of_day == 2)
 				{
-					double sample = generateSample(Cell_type.RURAL_AREA, Segment_of_week.WORKDAY, Segment_of_day.NIGHT); 
-					return new Measurement(current_time, sample);
+					return generateSample(Cell_type.RURAL_AREA, Segment_of_week.WORKDAY, Segment_of_day.NIGHT); 
 				}
 			}
 			else //Weekend
@@ -185,28 +169,25 @@ public class SampleGenerator
 				
 				if(segment_of_day == 0)
 				{
-					double sample = generateSample(Cell_type.RURAL_AREA, Segment_of_week.WEEKEND, Segment_of_day.NIGHT); 
-					return new Measurement(current_time, sample);
+					return generateSample(Cell_type.RURAL_AREA, Segment_of_week.WEEKEND, Segment_of_day.NIGHT); 
 				}
 				else if(segment_of_day == 1)
 				{
-					double sample = generateSample(Cell_type.RURAL_AREA, Segment_of_week.WEEKEND, Segment_of_day.NIGHT); 
-					return new Measurement(current_time, sample);
+					return generateSample(Cell_type.RURAL_AREA, Segment_of_week.WEEKEND, Segment_of_day.NIGHT); 
 				}
 				else if(segment_of_day == 2)
 				{
-					double sample = generateSample(Cell_type.RURAL_AREA, Segment_of_week.WEEKEND, Segment_of_day.NIGHT); 
-					return new Measurement(current_time, sample);
+					return generateSample(Cell_type.RURAL_AREA, Segment_of_week.WEEKEND, Segment_of_day.NIGHT); 
 				}
 			}
 		}
 
-		return null; //Error
+		return -1; //Error
 	}
 
 	private static double generateSample(Cell_type workingArea, Segment_of_week workday, Segment_of_day morning)
 	{
-		int general_std_dev = 10;
+		int general_std_dev = 5;
 		
 		if(workingArea == Cell_type.WORKING_AREA)
 		{
