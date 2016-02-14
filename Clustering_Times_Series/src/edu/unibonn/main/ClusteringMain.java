@@ -10,7 +10,9 @@ import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.jfree.data.time.Day;
@@ -26,7 +28,7 @@ import edu.unibonn.main.Sensor.Cell_type;
 import edu.unibonn.plotting.TimeSeriesPlotter_DBScan;
 import edu.unibonn.plotting.TimeSeriesPlotter_KMeans;
 
-public class ValuesGeneratorMain
+public class ClusteringMain
 {
 	public static void main(String[] args) throws Exception
 	{
@@ -36,9 +38,9 @@ public class ValuesGeneratorMain
 		
 		String pathCSV = "generated_sensor_values/1.csv";
 		
-		boolean normalized = true;
+		boolean normalized = false;
 		
-		sensors = new ValuesGeneratorMain().loadDataCSV(pathCSV, normalized);
+		sensors = new ClusteringMain().loadDataCSV(pathCSV, normalized);
 		
 		LocalDateTime from = sensors.get(0).getInitial_record_time();
 		System.out.println("FROM:"+from);
@@ -53,8 +55,8 @@ public class ValuesGeneratorMain
 		
 		if(temp_kmeans_or_dbscan == 0)
 		{
-			int min_k = 10;
-	        int max_k = 10;
+			int min_k = 12;
+	        int max_k = 12;
 
 	        int number_of_tries = 1;
 
@@ -72,7 +74,8 @@ public class ValuesGeneratorMain
 	        		
 	        		String clustering_id = "KMeans_k_"+current_k+ "_try_"+ i ;
 	        		
-	                final TimeSeriesPlotter_KMeans demo_1 = new TimeSeriesPlotter_KMeans(clustering_id, clusters);
+	                //final TimeSeriesPlotter_KMeans demo_1 = new TimeSeriesPlotter_KMeans(clustering_id, clusters);
+	                
 	                //demo_1.pack();
 	                //RefineryUtilities.centerFrameOnScreen(demo_1);
 	                //demo_1.setVisible(true);
@@ -88,8 +91,9 @@ public class ValuesGeneratorMain
 	                    	ArrayList<Cluster_KMeans> current_cluster = new ArrayList<Cluster_KMeans>();
 	                    	current_cluster.add(clusters.get(j));
 	                    	
-	                    	final TimeSeriesPlotter_KMeans demo_2 = new TimeSeriesPlotter_KMeans(separate_clustering_id_, current_cluster);
-	                        //demo_2.pack();
+	                    	//final TimeSeriesPlotter_KMeans demo_2 = new TimeSeriesPlotter_KMeans(separate_clustering_id_, current_cluster);
+	                        
+	                    	//demo_2.pack();
 	                        //RefineryUtilities.centerFrameOnScreen(demo_2);
 	                        //demo_2.setVisible(true);
 	                	}                	
@@ -229,94 +233,87 @@ public class ValuesGeneratorMain
 		{		
 			reader = new CSVReader(new FileReader(dataFilePath), ';');
 	
-			List<String[]> pre_matrix = new ArrayList<String[]>();//reader.readAll();
-			
 			try(BufferedReader br = new BufferedReader(new FileReader(dataFilePath))) 
-			{
-			    int counter_i = 0;
+			{	
+				String[] times_row = br.readLine().split(";");
+				
+				int dimensions = times_row.length-1;
+				
+				LocalDateTime initial_record_time = LocalDateTime.parse(times_row[1], DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss"));
+				
+				int counter_i = 1;
+				
+				String[] actual_row = null;
+				Sensor current_sensor = null;
+				
 				for(String line; (line = br.readLine()) != null; )
 			    {
-			    	String[] current = line.split(";");
-			    	pre_matrix.add(current);
-			    	
-			    	double percentaje = (counter_i+1.0)*100/120000;
-	            	System.out.println("Reading file: "+ percentaje );
-			    	counter_i++;
-			    }
-			}
-			
-			int rows = pre_matrix.size();
-			int columns = pre_matrix.get(0).length;
-			
-			int dimensions = columns-1;
-			
-			String[] times = pre_matrix.get(0);
+					actual_row = line.split(";");
 
-			LocalDateTime initial_record_time = LocalDateTime.parse(times[1], DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss"));
-
-			for (int i = 1; i < rows; i++) 
-			{		
-				String[] actual_row = pre_matrix.get(i);
-
-				Sensor current_sensor = new Sensor(actual_row[0], dimensions, initial_record_time);
-				
-				if(!normalized)
-				{
-					for (int j = 1; j < columns; j++)
-					{
-						double current_erlang = Double.valueOf(actual_row[j].replace(",", "."));
-						current_sensor.addMeasurement(j-1, current_erlang);
-					}
-				}
-				else
-				{
-					//NORMALIZE
-					//1. Create a 24dim double vector with the absolute values.
-					//2. Find the highest value, that is going to be 100.
-					//3. Escalate all other values between 0 and 1.
+					current_sensor = new Sensor(actual_row[0], dimensions, initial_record_time);
 					
-					double[] absolute_values = new double[dimensions];
-					double current_max = 0;
-					
-					for (int j = 0; j < columns-1; j++)
+					if(!normalized)
 					{
-						double current_erlang = Double.valueOf(actual_row[j+1].replace(",", "."));
-						absolute_values[j] = current_erlang;
-						
-						if(current_max < current_erlang)
+						for (int j = 1; j <= dimensions; j++)
 						{
-							current_max = current_erlang;
-						}
-					}
-					
-					//Because of sensor: DXB971A (and maybe more).
-					if(current_max > 0)
-					{
-						for (int j = 0; j < absolute_values.length; j++)
-						{
-							double current_erlang_normalized = (absolute_values[j]*100)/current_max;
-							current_sensor.addMeasurement(j, current_erlang_normalized);
-						}
-					}
-					else if(current_max == 0)
-					{
-						for (int j = 0; j < absolute_values.length; j++)
-						{
-							current_sensor.addMeasurement(j, 0);
+							current_sensor.addMeasurement(j-1, Double.valueOf(actual_row[j].replace(",", ".")));
 						}
 					}
 					else
 					{
-						System.out.println("ERROR ON DATA LOADING.(1)");
+						//NORMALIZE
+						//1. Create a 24dim double vector with the absolute values.
+						//2. Find the highest value, that is going to be 100.
+						//3. Escalate all other values between 0 and 1.
+						
+						double[] absolute_values = new double[dimensions];
+						double current_max = 0;
+						
+						for (int j = 0; j < dimensions; j++)
+						{
+							double current_erlang = Double.valueOf(actual_row[j+1].replace(",", "."));
+							absolute_values[j] = current_erlang;
+							
+							if(current_max < current_erlang)
+							{
+								current_max = current_erlang;
+							}
+						}
+						
+						//Because of sensor: DXB971A (and maybe more).
+						if(current_max > 0)
+						{
+							for (int j = 0; j < absolute_values.length; j++)
+							{
+								current_sensor.addMeasurement(j, (absolute_values[j]*100)/current_max);
+							}
+						}
+						else if(current_max == 0)
+						{
+							for (int j = 0; j < absolute_values.length; j++)
+							{
+								current_sensor.addMeasurement(j, 0);
+							}
+						}
+						else
+						{
+							System.out.println("ERROR ON DATA LOADING.(1)");
+						}
 					}
-				}
-								
-				return_matrix.add(current_sensor);
-				
-				double percentaje = ((i-1)+1.0)*100/rows;
-            	System.out.println("Loading data: "+ percentaje );
+									
+					return_matrix.add(current_sensor);
+
+	            	System.out.println("Reading file, row"+ counter_i);
+			    	counter_i++;
+			    	
+//			    	if(counter_i == 30000 || counter_i == 50000 || counter_i == 80000)
+//			    	{
+//			    		Thread.sleep(10000);
+//			    		System.gc();
+//			    	}
+			    }
 			}
-			
+
 			//printMatrix(data_matrix);
 		}
 		catch(Exception e) 
@@ -338,4 +335,139 @@ public class ValuesGeneratorMain
 		
 		return return_matrix;
 	}
+	
+//	private ArrayList<Sensor> loadDataCSV(String dataFilePath, boolean normalized)
+//	{
+//		CSVReader reader = null;
+//		ArrayList<Sensor> return_matrix = new ArrayList<Sensor>();
+//		
+//		try
+//		{		
+//			reader = new CSVReader(new FileReader(dataFilePath), ';');
+//	
+//			//List<String[]> pre_matrix = new ArrayList<String[]>();//reader.readAll();
+//			ArrayDeque<String[]> pre_matrix = new ArrayDeque<String[]>();//reader.readAll();
+//			
+//			try(BufferedReader br = new BufferedReader(new FileReader(dataFilePath))) 
+//			{	
+//				int counter_i = 0;
+//				for(String line; (line = br.readLine()) != null; )
+//			    {
+//			    	pre_matrix.add(line.split(";"));
+//	            	System.out.println("Reading file: "+ (float)counter_i*100/120000 );
+//			    	counter_i++;
+//			    	
+////			    	if(((float)counter_i*100/120000)%5 == 0)
+////			    	{
+////			    		System.out.println("Calling GC.");
+////			    		Thread.sleep(5000);
+////			    		System.gc();
+////			    		Thread.sleep(5000);
+////			    	}
+//			    }
+//			}
+//			
+//			int rows = pre_matrix.size();
+//			//int columns = pre_matrix.get(0).length;
+//			int columns = pre_matrix.getFirst().length;
+//			
+//			int dimensions = columns-1;
+//			
+//			//String[] times = pre_matrix.get(0);
+//			String[] times = pre_matrix.getFirst();
+//
+//			LocalDateTime initial_record_time = LocalDateTime.parse(times[1], DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss"));
+//
+//			Iterator<String[]> itr= pre_matrix.iterator();
+//			
+//			int i = 0;
+//			//for (int i = 1; i < rows; i++)
+//			itr.next();//first row is time.
+//			while(itr.hasNext())
+//			{		
+//				//String[] actual_row = pre_matrix.get(i);
+//				String[] actual_row = itr.next();
+//
+//				Sensor current_sensor = new Sensor(actual_row[0], dimensions, initial_record_time);
+//				
+//				if(!normalized)
+//				{
+//					for (int j = 1; j < columns; j++)
+//					{
+//						double current_erlang = Double.valueOf(actual_row[j].replace(",", "."));
+//						current_sensor.addMeasurement(j-1, current_erlang);
+//					}
+//				}
+//				else
+//				{
+//					//NORMALIZE
+//					//1. Create a 24dim double vector with the absolute values.
+//					//2. Find the highest value, that is going to be 100.
+//					//3. Escalate all other values between 0 and 1.
+//					
+//					double[] absolute_values = new double[dimensions];
+//					double current_max = 0;
+//					
+//					for (int j = 0; j < columns-1; j++)
+//					{
+//						double current_erlang = Double.valueOf(actual_row[j+1].replace(",", "."));
+//						absolute_values[j] = current_erlang;
+//						
+//						if(current_max < current_erlang)
+//						{
+//							current_max = current_erlang;
+//						}
+//					}
+//					
+//					//Because of sensor: DXB971A (and maybe more).
+//					if(current_max > 0)
+//					{
+//						for (int j = 0; j < absolute_values.length; j++)
+//						{
+//							double current_erlang_normalized = (absolute_values[j]*100)/current_max;
+//							current_sensor.addMeasurement(j, current_erlang_normalized);
+//						}
+//					}
+//					else if(current_max == 0)
+//					{
+//						for (int j = 0; j < absolute_values.length; j++)
+//						{
+//							current_sensor.addMeasurement(j, 0);
+//						}
+//					}
+//					else
+//					{
+//						System.out.println("ERROR ON DATA LOADING.(1)");
+//					}
+//				}
+//								
+//				return_matrix.add(current_sensor);
+//				
+//				double percentaje = ((i-1)+1.0)*100/rows;
+//            	System.out.println("Loading data: "+ percentaje );
+//            	
+//            	i++;
+//			}
+//			
+//			//printMatrix(data_matrix);
+//		}
+//		catch(Exception e) 
+//		{
+//		    System.err.println(e.getMessage());
+//		    e.printStackTrace();
+//		}
+//		finally
+//		{
+//			try 
+//			{
+//				reader.close();
+//			} 
+//			catch (IOException e) 
+//			{
+//				System.err.println(e.getMessage());
+//			}
+//		}
+//		
+//		return return_matrix;
+//	}
 }

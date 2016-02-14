@@ -75,7 +75,7 @@ public class KMeans_clustering
 				
 				clusters.get(current_closest_cluster_index).addMembership(current_d_point);
 				
-				System.out.println("Mapping: "+ (i+1.0)*100/sensors.size()+"%");
+				System.out.println("Mapping: "+ (float)i*100/sensors.size()+"%");
 			}
 			
 			for (int i = 0; i < k; i++) //Iterate over all the clusters.
@@ -83,7 +83,7 @@ public class KMeans_clustering
 				clusters.get(i).recalculatePositionOfCentroid(); //Means.
 				//clusters.get(i).recalculatePositionOfCentroid_DBA();
 				
-				System.out.println("Reducing: "+ (i+1.0)*100/k+"%");
+				System.out.println("Reducing: "+ (float)i*100/k+"%");
 			}
 			
 			for (int i = 0; i < k; i++) //Iterate over all the clusters.
