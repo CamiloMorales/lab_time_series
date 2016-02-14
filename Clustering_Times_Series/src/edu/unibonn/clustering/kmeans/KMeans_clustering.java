@@ -17,13 +17,13 @@ public class KMeans_clustering
 		System.out.println("Starting KMEANS");
 		
 		//1- We generate randomly (uniform) the initial clusters.
-		ArrayList<Cluster_KMeans> clusters = generate_random_centroids(sensors, k);
+		//ArrayList<Cluster_KMeans> clusters = generate_random_centroids(sensors, k);
 		
 		double T1 = 3000; //200
 		double T2 = 2000; //50
 		
-		//ArrayList<Cluster_KMeans> clusters = generate_centroids_with_canopy(sensors, T1, T2);	
-		//k = clusters.size();
+		ArrayList<Cluster_KMeans> clusters = generate_centroids_with_canopy(sensors, T1, T2);	
+		k = clusters.size();
 		
 		//2-Until we get no improvement (quality dont improve anymore), do:
 		double previous_total_clustering_squared_error = -1; //For initialization.
@@ -33,9 +33,14 @@ public class KMeans_clustering
 		
 		ArrayList<Cluster_KMeans> previous_clusters = new ArrayList<Cluster_KMeans>(); 
 		
-		while(haveTheCentroidsMembershipChanged(clusters, previous_clusters) || actual_total_clustering_squared_error == -1)
+		//while(haveTheCentroidsMembershipChanged(clusters, previous_clusters) || actual_total_clustering_squared_error == -1)
+		while(previous_total_clustering_squared_error > actual_total_clustering_squared_error || previous_total_clustering_squared_error == -1)
 		{
 			total_iterations_to_converge++;
+			System.out.println("\n Iteration: "+total_iterations_to_converge);
+			
+			System.out.println("previous_total_clustering_squared_error: "+previous_total_clustering_squared_error);
+			System.out.println("actual_total_clustering_squared_error: "+actual_total_clustering_squared_error);
 			
 			//2.1- Iterate over all the points, for each point (in d dimensions) calculate the distance to each centroid, and assign it to the closest centroid.
 			
@@ -75,7 +80,10 @@ public class KMeans_clustering
 				
 				clusters.get(current_closest_cluster_index).addMembership(current_d_point);
 				
-				System.out.println("Mapping: "+ (float)i*100/sensors.size()+"%");
+				if((float)i*100/sensors.size() % 5 == 0)
+				{
+					System.out.println("Mapping: "+ (float)i*100/sensors.size()+"%");
+				}
 			}
 			
 			for (int i = 0; i < k; i++) //Iterate over all the clusters.
@@ -83,16 +91,13 @@ public class KMeans_clustering
 				clusters.get(i).recalculatePositionOfCentroid(); //Means.
 				//clusters.get(i).recalculatePositionOfCentroid_DBA();
 				
-				System.out.println("Reducing: "+ (float)i*100/k+"%");
+				System.out.println("Reducing: "+ (float)(i+1)*100/k+"%");
 			}
 			
 			for (int i = 0; i < k; i++) //Iterate over all the clusters.
 			{
 				actual_total_clustering_squared_error += clusters.get(i).getClusterSquareError(); //Calculate the new total clustering squared error.
 			}
-			
-			total_iterations_to_converge++;
-			System.out.println("Iteration: "+total_iterations_to_converge);
 		}
 
 		System.out.println("\n -KMeans execution FINISHED for k="+k+".\n -Quality measure (Total Cluster square error (within-cluster variation))= "+Math.sqrt(actual_total_clustering_squared_error)+". Total number of iterations to converge: "+ total_iterations_to_converge);
@@ -140,6 +145,8 @@ public class KMeans_clustering
 
 		while(!copy_of_data.isEmpty())
 		{
+			System.out.println("Canopy. Points left to visist: "+ copy_of_data.size());
+			
 			Sensor current_point = copy_of_data.poll();
 			
 			//Cluster_KMeans new_canopy = new Cluster_KMeans("Canopy "+count);
