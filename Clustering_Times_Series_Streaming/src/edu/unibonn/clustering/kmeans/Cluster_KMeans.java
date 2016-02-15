@@ -50,6 +50,11 @@ public class Cluster_KMeans
 	{
 		this.membership = new HashSet<String>();
 	}
+	
+	public void set_membership_vector(HashSet<String> new_members)
+	{
+		this.membership = (HashSet<String>)new_members.clone();
+	}
 
 	public double euclidean_distance_to(double[] other_center_of_mass)
 	{
@@ -109,5 +114,12 @@ public class Cluster_KMeans
 		this.sum_dimensions_members = new double[dimensions];
 		this.membership = new HashSet<String>();
 		this.intra_cluster_error = 0;
+	}
+	
+	protected Cluster_KMeans copy()
+	{
+		Cluster_KMeans new_cluster = new Cluster_KMeans(this.cluster_id, this.dimensions, this.initial_center_of_mass);
+		new_cluster.set_membership_vector(this.membership);	
+		return new_cluster;
 	}
 }

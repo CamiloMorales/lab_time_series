@@ -28,10 +28,13 @@ public class KMeans_clustering
 		
 		ArrayList<Cluster_KMeans> previous_clusters = new ArrayList<Cluster_KMeans>();
 		
-		while(clusters_have_changed_assignment(clusters, previous_clusters))
+		for (int i = 0; i <clusters.size(); i++) 
 		{
-			previous_clusters = new ArrayList<Cluster_KMeans>(clusters);
-			
+			previous_clusters.add(clusters.get(i).copy());
+		}
+		
+		while(clusters_have_changed_assignment(clusters, previous_clusters) || total_iterations_to_converge == 0)
+		{	
 			total_iterations_to_converge++;
 			System.out.println("\n Iteration: "+total_iterations_to_converge);
 			
@@ -39,10 +42,14 @@ public class KMeans_clustering
 			
 			if(total_iterations_to_converge > 1) //Is not the first operation.
 			{
+				previous_clusters = new ArrayList<Cluster_KMeans>();
+				
 				for (int j = 0; j < k; j++) //Before each iteration we reset the membership vector of the clusters BUT not the new position (random in the first iteration). 
 				    //That way we can re-calculate and re-assign the points to the new centroids and re-calculate the quality, and then decide (comparing with the qualty of the previous iteration) weather to iterate again or finish.
 					//In the first iteration the position of the centroids are random, and the initial previous_clustering_quality (sum of the squared error of each cluster) is Infinity. (We guarantee at least the 2 iterations)
 				{
+					previous_clusters.add(clusters.get(j).copy());
+					
 					clusters.get(j).prepare_for_new_iteration();
 				}
 			}	
@@ -54,6 +61,8 @@ public class KMeans_clustering
 			
 			for(String line; (line = br.readLine()) != null; ) //Iterate over all the points.
 			{
+				counter_points++;
+				
 				double current_closest_distance = Double.POSITIVE_INFINITY;
 				int current_closest_cluster_index = -1;
 
@@ -92,25 +101,27 @@ public class KMeans_clustering
 			
 			br.close();
 			
-			String pathCSV = "generated_sensor_values/1_short.csv";
+			String pathCSV = "generated_sensor_values/1_orig.csv";
 			br = new BufferedReader(new FileReader(pathCSV));
 			br.readLine(); //We dont need the headers.
 		}
 
 		br.close();
 		
-		System.out.println("\n -KMeans execution FINISHED for k="+k+".\n Total number of iterations to converge: "+ total_iterations_to_converge);
+		double total_intra_clustering_error = 0;
+		
+		for (int i = 0; i < clusters.size(); i++)
+		{
+			total_intra_clustering_error+=clusters.get(i).getClusterSquareError();
+		}
+		
+		System.out.println("\n -KMeans execution FINISHED for k="+k+".\n Total intra-cluster_square_error: "+total_intra_clustering_error+".\n Total number of iterations to converge: "+ total_iterations_to_converge);
 		
 		return clusters;
 	}
 
 	private boolean clusters_have_changed_assignment(ArrayList<Cluster_KMeans> clusters, ArrayList<Cluster_KMeans> previous_clusters)
 	{
-		if(previous_clusters.size() == 0) //first time
-		{
-			return true;
-		}
-		
 		for (int i = 0; i < clusters.size(); i++)
 		{
 			if(clusters.get(i).getMembership().size() != previous_clusters.get(i).getMembership().size())

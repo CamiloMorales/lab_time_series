@@ -9,7 +9,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import edu.unibonn.main.Sensor;
 import edu.unibonn.main.Sensor.Cell_type;
-import edu.unibonn.plotting.TimeSeriesPlotter_Sensors;
 
 public class BigDataGenerator {
 

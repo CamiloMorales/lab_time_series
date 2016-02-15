@@ -1,36 +1,19 @@
 package edu.unibonn.main;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
-import java.time.DayOfWeek;
 import java.time.LocalDateTime;
-import java.time.Month;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Stream;
 
-import org.jfree.data.time.Day;
-import org.jfree.ui.RefineryUtilities;
-
-import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
-import edu.unibonn.clustering.dbscan.Cluster_DBScan;
-import edu.unibonn.clustering.dbscan.DBScan_clustering;
 import edu.unibonn.clustering.kmeans.Cluster_KMeans;
 import edu.unibonn.clustering.kmeans.KMeans_clustering;
-import edu.unibonn.main.Sensor.Cell_type;
-import edu.unibonn.plotting.TimeSeriesPlotter_DBScan;
 import edu.unibonn.plotting.TimeSeriesPlotter_KMeans;
 
 public class ClusteringMain
@@ -39,7 +22,7 @@ public class ClusteringMain
 	{
 		System.out.println("STARTING!");
 
-		String pathCSV = "generated_sensor_values/1_short.csv";
+		String pathCSV = "generated_sensor_values/1_orig.csv";
 	
 		BufferedReader br = new BufferedReader(new FileReader(pathCSV));
 
@@ -77,26 +60,26 @@ public class ClusteringMain
                 //RefineryUtilities.centerFrameOnScreen(demo_1);
                 //demo_1.setVisible(true);
                 
-                String separate_clustering_id_ = new String();
+//                String separate_clustering_id_ = new String();
+//                
+//                for (int j = 0; j < clusters.size(); j++)
+//                {
+//                	if(clusters.get(j).getMembership().size() > 0)
+//                	{
+//                		separate_clustering_id_ = "KMeans_k_"+current_k+ "_try_"+ i +"_only_cluster_"+clusters.get(j).getCluster_id()+"has_"+clusters.get(j).getMembership().size()+"members_("+((float)clusters.get(j).getMembership().size()*100)/821+"%)";
+//                    	
+//                    	ArrayList<Cluster_KMeans> current_cluster = new ArrayList<Cluster_KMeans>();
+//                    	current_cluster.add(clusters.get(j));
+//                    	
+//                    	//final TimeSeriesPlotter_KMeans demo_2 = new TimeSeriesPlotter_KMeans(separate_clustering_id_, current_cluster);
+//                        
+//                    	//demo_2.pack();
+//                        //RefineryUtilities.centerFrameOnScreen(demo_2);
+//                        //demo_2.setVisible(true);
+//                	}                	
+//				}
                 
-                for (int j = 0; j < clusters.size(); j++)
-                {
-                	if(clusters.get(j).getMembership().size() > 0)
-                	{
-                		separate_clustering_id_ = "KMeans_k_"+current_k+ "_try_"+ i +"_only_cluster_"+clusters.get(j).getCluster_id()+"has_"+clusters.get(j).getMembership().size()+"members_("+((float)clusters.get(j).getMembership().size()*100)/821+"%)";
-                    	
-                    	ArrayList<Cluster_KMeans> current_cluster = new ArrayList<Cluster_KMeans>();
-                    	current_cluster.add(clusters.get(j));
-                    	
-                    	//final TimeSeriesPlotter_KMeans demo_2 = new TimeSeriesPlotter_KMeans(separate_clustering_id_, current_cluster);
-                        
-                    	//demo_2.pack();
-                        //RefineryUtilities.centerFrameOnScreen(demo_2);
-                        //demo_2.setVisible(true);
-                	}                	
-				}
-                
-                //exportToCVS_clusterMembership_KMeans(clusters, clustering_id);
+                exportToCVS_clusterMembership_KMeans(clusters, clustering_id);
 			}
 		}
 	}
@@ -104,6 +87,8 @@ public class ClusteringMain
 	//from: http://viralpatel.net/blogs/java-read-write-csv-file/
 	private static void exportToCVS_clusterMembership_KMeans(ArrayList<Cluster_KMeans> clusters, String clustering_id)
 	{
+		int total_number_of_series = 120000;
+		
 		String csv = "./csv_clusters_membership_output/"+clustering_id+".csv";
 
 		System.out.println(" -In \""+csv+ "\""+":");
@@ -131,9 +116,9 @@ public class ClusteringMain
 				}
 
 				count_absolute = count_absolute + all_members.size();
-				count_percentage = count_percentage + ((float)all_members.size()/821)*100;
+				count_percentage = count_percentage + ((float)all_members.size()/total_number_of_series)*100;
 				
-				System.out.println("\t - Cluster "+i+" has "+all_members.size()+" members. ("+((float)all_members.size()/821)*100+"%)");
+				System.out.println("\t - Cluster "+i+" has "+all_members.size()+" members. ("+((float)all_members.size()/total_number_of_series)*100+"%)");
 			}
 			
 			System.out.println("Total number of series: "+count_absolute);
