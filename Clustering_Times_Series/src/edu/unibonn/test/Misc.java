@@ -7,7 +7,15 @@ public class Misc {
 
 	public static void main(String[] args) 
 	{
-		new Misc().tests();
+		byte byte_1 = 16;
+		byte byte_2 = 50;
+		int byte_3 = byte_1 + byte_2;
+		
+		System.out.println(byte_1);
+		System.out.println(byte_2);
+		System.out.println(byte_3);
+		
+		//new Misc().tests();
 	}
 
 	private void tests()
