@@ -22,7 +22,7 @@ public class ClusteringMain
 	{
 		System.out.println("STARTING!");
 
-		String pathCSV = "generated_sensor_values/1_orig.csv";
+		String pathCSV = "generated_sensor_values/1_full.csv";
 	
 		BufferedReader br = new BufferedReader(new FileReader(pathCSV));
 
@@ -35,8 +35,8 @@ public class ClusteringMain
 		
 		//KMEANS ##########################################################################################
 		
-		int min_k = 3;
-        int max_k = 3;
+		int min_k = 12;
+        int max_k = 12;
 
         int number_of_tries = 1;
 
@@ -50,11 +50,12 @@ public class ClusteringMain
 
         		long final_time = System.currentTimeMillis();
         		
-        		System.out.println("Execution took: "+((double)(final_time-initial_time)/1000));
+        		System.out.println("Execution took: "+((double)(final_time-initial_time)/1000)+"secs.");
+        		System.out.println("Execution took: "+(((double)(final_time-initial_time)/1000)/60)+"mins.");
         		
         		String clustering_id = "KMeans_k_"+current_k+ "_try_"+ i ;
         		
-                //final TimeSeriesPlotter_KMeans demo_1 = new TimeSeriesPlotter_KMeans(clustering_id, clusters);
+               //final TimeSeriesPlotter_KMeans demo_1 = new TimeSeriesPlotter_KMeans(clustering_id, clusters);
                 
                 //demo_1.pack();
                 //RefineryUtilities.centerFrameOnScreen(demo_1);
@@ -71,7 +72,7 @@ public class ClusteringMain
 //                    	ArrayList<Cluster_KMeans> current_cluster = new ArrayList<Cluster_KMeans>();
 //                    	current_cluster.add(clusters.get(j));
 //                    	
-//                    	//final TimeSeriesPlotter_KMeans demo_2 = new TimeSeriesPlotter_KMeans(separate_clustering_id_, current_cluster);
+//                    	final TimeSeriesPlotter_KMeans demo_2 = new TimeSeriesPlotter_KMeans(separate_clustering_id_, current_cluster, from);
 //                        
 //                    	//demo_2.pack();
 //                        //RefineryUtilities.centerFrameOnScreen(demo_2);

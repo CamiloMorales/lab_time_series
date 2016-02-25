@@ -8,6 +8,7 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 
 import org.jfree.chart.ChartFactory;
@@ -30,11 +31,11 @@ import edu.unibonn.main.Sensor;
 
 public class TimeSeriesPlotter_KMeans extends ApplicationFrame
 {
-    public TimeSeriesPlotter_KMeans(String title, ArrayList<Cluster_KMeans> clusters)
+    public TimeSeriesPlotter_KMeans(String title, ArrayList<Cluster_KMeans> clusters, LocalDateTime from)
     {
     	super(title);
-        final XYDataset dataset = createDataset_clusters(clusters);     
-        final XYDataset dataset_cetroids = createDataset_centroids(clusters); 
+        final XYDataset dataset = createDataset_clusters(clusters, from);     
+        final XYDataset dataset_cetroids = createDataset_centroids(clusters, from); 
         final JFreeChart chart = createChart(dataset, dataset_cetroids, clusters);
         final ChartPanel chartPanel = new ChartPanel(chart);
         
@@ -52,20 +53,20 @@ public class TimeSeriesPlotter_KMeans extends ApplicationFrame
 		}
 	}
 
-    private XYDataset createDataset_centroids(ArrayList<Cluster_KMeans> clusters)
+    private XYDataset createDataset_centroids(ArrayList<Cluster_KMeans> clusters, LocalDateTime from)
 	{
 		final TimeSeriesCollection dataset = new TimeSeriesCollection();
 		
 		for (int i = 0; i < clusters.size(); i++)
 		{
 			Cluster_KMeans current_cluster = clusters.get(i);	
-			double[] center_of_mass = current_cluster.getCenter_of_mass();
+			double[] center_of_mass = current_cluster.getRecalculated_center_of_mass();
 			
 			final TimeSeries s1 = new TimeSeries("Cluster_"+current_cluster.getCluster_id(), Hour.class);
 
 			for (int j = 0; j < current_cluster.getDimensionality(); j++)
 			{
-				LocalDateTime current_record_time = current_cluster.getInitial_record_time().plusHours(j);
+				LocalDateTime current_record_time = from.plusHours(j);
 				
 				s1.add(new Hour( current_record_time.getHour(), current_record_time.getDayOfMonth(), current_record_time.getMonthValue(), current_record_time.getYear() ), center_of_mass[j]);
 			}
@@ -78,14 +79,14 @@ public class TimeSeriesPlotter_KMeans extends ApplicationFrame
         return dataset;
 	}
     
-	private XYDataset createDataset_clusters(ArrayList<Cluster_KMeans> clusters)
+	private XYDataset createDataset_clusters(ArrayList<Cluster_KMeans> clusters, LocalDateTime from)
 	{
 		final TimeSeriesCollection dataset = new TimeSeriesCollection();
 		
 		for (int i = 0; i < clusters.size(); i++)
 		{
 			Cluster_KMeans current_cluster = clusters.get(i);	
-			ArrayList<Sensor> member_time_series = current_cluster.getMembership();
+			HashSet<String> member_time_series = current_cluster.getMembership();
 
 			for (Iterator iterator = member_time_series.iterator(); iterator.hasNext();)
 			{
@@ -151,7 +152,7 @@ public class TimeSeriesPlotter_KMeans extends ApplicationFrame
         for (int i = 0; (i < 11) && (i < clusters.size()); i++)
 		{
 			Cluster_KMeans current_cluster = clusters.get(i);	
-			ArrayList<Sensor> member_time_series = current_cluster.getMembership();
+			HashSet<String> member_time_series = current_cluster.getMembership();
 			
 			for (int j = 0; j < member_time_series.size(); j++)
 			{

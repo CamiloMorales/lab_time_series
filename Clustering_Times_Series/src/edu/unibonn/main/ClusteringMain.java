@@ -55,8 +55,8 @@ public class ClusteringMain
 		
 		if(temp_kmeans_or_dbscan == 0)
 		{
-			int min_k = 10;
-	        int max_k = 10;
+			int min_k = 3;
+	        int max_k = 3;
 
 	        int number_of_tries = 1;
 
@@ -70,11 +70,12 @@ public class ClusteringMain
 
 	        		long final_time = System.currentTimeMillis();
 	        		
+	        		System.out.println("Execution took: "+((double)(final_time-initial_time)/1000)+"secs.");
 	        		System.out.println("Execution took: "+(((double)(final_time-initial_time)/1000)/60)+"mins.");
 	        		
 	        		String clustering_id = "KMeans_k_"+current_k+ "_try_"+ i ;
 	        		
-	                final TimeSeriesPlotter_KMeans demo_1 = new TimeSeriesPlotter_KMeans(clustering_id, clusters);
+	                //final TimeSeriesPlotter_KMeans demo_1 = new TimeSeriesPlotter_KMeans(clustering_id, clusters);
 	                
 	                //demo_1.pack();
 	                //RefineryUtilities.centerFrameOnScreen(demo_1);
@@ -99,7 +100,7 @@ public class ClusteringMain
 	                	}                	
 					}
 	                
-	                //exportToCVS_clusterMembership_KMeans(clusters, clustering_id);
+	                exportToCVS_clusterMembership_KMeans(clusters, clustering_id);
 				}
 			}
 		}
@@ -203,6 +204,8 @@ public class ClusteringMain
 			
 			for (int i = 0; i < clusters.size(); i++)
 			{
+				System.out.println("\t Writing cluster: "+(i+1));
+				
 				Cluster_DBScan current_cluster = clusters.get(i);
 				
 				ArrayList<Sensor> all_members = current_cluster.getMembership();
@@ -212,7 +215,7 @@ public class ClusteringMain
 					data.add(new String[] {all_members.get(j).getId(), current_cluster.getCluster_id()});
 				}
 
-				System.out.println("\t - Cluster "+i+" has "+all_members.size()+" members. ("+((float)all_members.size()/821)*100+"%)");
+				//System.out.println("\t - Cluster "+i+" has "+all_members.size()+" members. ("+((float)all_members.size()/821)*100+"%)");
 			}
 			
 			writer.writeAll(data);
@@ -226,6 +229,8 @@ public class ClusteringMain
 
 	private ArrayList<Sensor> loadDataCSV(String dataFilePath, boolean normalized)
 	{
+		long initial_time = System.currentTimeMillis();
+		
 		CSVReader reader = null;
 		ArrayList<Sensor> return_matrix = new ArrayList<Sensor>();
 		
@@ -330,6 +335,11 @@ public class ClusteringMain
 				System.err.println(e.getMessage());
 			}
 		}
+		
+		long final_time = System.currentTimeMillis();
+		
+		System.out.println("Loading the data took: "+((double)(final_time-initial_time)/1000)+"secs.");
+		System.out.println("Loading the data took: "+(((double)(final_time-initial_time)/1000)/60)+"mins.");
 		
 		return return_matrix;
 	}

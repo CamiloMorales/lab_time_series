@@ -35,6 +35,8 @@ public class KMeans_clustering
 		
 		while(clusters_have_changed_assignment(clusters, previous_clusters) || total_iterations_to_converge == 0)
 		{	
+			long initial_time = System.currentTimeMillis();
+			
 			total_iterations_to_converge++;
 			System.out.println("\n Iteration: "+total_iterations_to_converge);
 			
@@ -93,7 +95,7 @@ public class KMeans_clustering
 				
 				clusters.get(current_closest_cluster_index).addMembershipAndSumDimensions(current_point_string[0], dimensions_current_point, current_closest_distance);
 				
-				if((counter_points+1.0)% 100 == 0)
+				if((counter_points+1.0)% 1000 == 0)
 				{
 					System.out.println("Mapping/Reducing point: "+ counter_points);
 				}
@@ -101,9 +103,12 @@ public class KMeans_clustering
 			
 			br.close();
 			
-			String pathCSV = "generated_sensor_values/1_orig.csv";
+			String pathCSV = "generated_sensor_values/1_full.csv";
 			br = new BufferedReader(new FileReader(pathCSV));
 			br.readLine(); //We dont need the headers.
+						
+			long final_time = System.currentTimeMillis();
+			System.out.println("Iteration "+total_iterations_to_converge+"took: "+((double)(final_time-initial_time)/1000)+"secs.");
 		}
 
 		br.close();

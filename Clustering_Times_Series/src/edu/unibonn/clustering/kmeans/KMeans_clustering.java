@@ -36,6 +36,8 @@ public class KMeans_clustering
 		//while(haveTheCentroidsMembershipChanged(clusters, previous_clusters) || actual_total_clustering_squared_error == -1)
 		while(previous_total_clustering_squared_error > actual_total_clustering_squared_error || previous_total_clustering_squared_error == -1)
 		{
+			long initial_time = System.currentTimeMillis();
+			
 			total_iterations_to_converge++;
 			System.out.println("\n Iteration: "+total_iterations_to_converge);
 			
@@ -98,6 +100,10 @@ public class KMeans_clustering
 			{
 				actual_total_clustering_squared_error += clusters.get(i).getClusterSquareError(); //Calculate the new total clustering squared error.
 			}
+			
+			long final_time = System.currentTimeMillis();
+    		
+    		System.out.println("Iteration "+total_iterations_to_converge+"took: "+((double)(final_time-initial_time)/1000)+"secs.");
 		}
 
 		System.out.println("\n -KMeans execution FINISHED for k="+k+".\n -Quality measure (Total Cluster square error (within-cluster variation))= "+Math.sqrt(actual_total_clustering_squared_error)+". Total number of iterations to converge: "+ total_iterations_to_converge);
