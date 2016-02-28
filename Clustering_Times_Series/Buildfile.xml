@@ -2,6 +2,7 @@
 	
   <property name="JPGs" location="jpgs"/>
   <property name="CSVs" location="csv_clusters_membership_output"/>
+  <property name="HISTOGRAM" location="distances_histogram_jpg"/>
 
   <target name="Delete JPGs and CSVs" description="clean up">
 	  	<delete>	
@@ -9,5 +10,11 @@
 	  		<fileset dir="${CSVs}" includes="**/*"/>
 	  	</delete>
   </target>
+	
+  <target name="Delete Distance Histogram" description="Delete Distance Histogram">
+	  	<delete>	
+	  		<fileset dir="${HISTOGRAM}" includes="**/*"/>
+	  	</delete>
+   </target>
 	
 </project>

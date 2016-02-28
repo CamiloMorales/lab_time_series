@@ -1,8 +1,7 @@
-package edu.unibonn.test;
+package edu.unibonn.distances.histogram;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -10,18 +9,19 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.jfree.ui.RefineryUtilities;
+
 import au.com.bytecode.opencsv.CSVReader;
-import au.com.bytecode.opencsv.CSVWriter;
-import edu.unibonn.clustering.kmeans.Cluster_KMeans;
-import edu.unibonn.main.Sensor;
+import edu.unibonn.clustering.model.Sensor;
+import edu.unibonn.plotting.DistancesHistogramPlotter;
 
 public class DistancesHistogram
 {
 	public static void main(String[] args)
 	{
-		String dataFilePath = "input_data/real_data_time_series_Time_vs_Sensors.csv";
-		
-		boolean normalized = true;
+		String dataFilePath = args[0];
+		boolean normalized = (Integer.valueOf(args[1]) == 0? true: false); //0-NORMALIZE, 1-NOT NORMALIZE.
+		String outputPath = args[2];
 		
 		CSVReader reader = null;
 		ArrayList<Sensor> return_matrix = new ArrayList<Sensor>();
@@ -140,7 +140,7 @@ public class DistancesHistogram
 			
 			for (int j = 0; j < return_matrix.size(); j++)
 			{
-				current_distance = (int)current_i.euclidean_distance_to(return_matrix.get(j));
+				current_distance = (int)current_i.euclidean_distance_to(return_matrix.get(j)); //An approximation, to get smaller histograms.
 				
 				if(current_distance > 0 && histogram.contains(new RepeatedNumber(current_distance)))
 				{
@@ -159,17 +159,17 @@ public class DistancesHistogram
 			}
 		}
 		
+		for (int i = 0; i < histogram.size(); i++)
+		{
+			histogram.get(i).normalize();
+		}
+		
 		Collections.sort(histogram);
 		
-		for (int i = 0; i < histogram.size(); i++) 
-		{
-			System.out.println(histogram.get(i).getNumber());
-		}
+		DistancesHistogramPlotter chart = new DistancesHistogramPlotter("Distances Histrogram", outputPath, histogram);
 		
-		for (int i = 0; i < histogram.size(); i++) 
-		{
-			System.out.println(histogram.get(i).getRepetitions());
-		}
-
+//		chart.pack( );        
+//		RefineryUtilities.centerFrameOnScreen( chart );
+//		chart.setVisible( true );	
 	}
 }

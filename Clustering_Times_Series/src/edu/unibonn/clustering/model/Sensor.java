@@ -1,4 +1,4 @@
-package edu.unibonn.main;
+package edu.unibonn.clustering.model;
 
 import java.time.LocalDateTime;
 

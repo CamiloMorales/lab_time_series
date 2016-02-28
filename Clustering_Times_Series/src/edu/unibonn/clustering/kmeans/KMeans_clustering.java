@@ -1,39 +1,44 @@
 package edu.unibonn.clustering.kmeans;
 
-import java.time.DayOfWeek;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
 
-import edu.unibonn.main.Sensor;
+import edu.unibonn.clustering.model.Cluster_KMeans;
+import edu.unibonn.clustering.model.Sensor;
 
 public class KMeans_clustering
 {
-	//int day: 1- Montag, 2- Dienstag, ..., 7 Sontag.
-	public ArrayList<Cluster_KMeans> cluster_KMeans_euclidean_d_dims(ArrayList<Sensor> sensors, int k) throws Exception
+	public ArrayList<Cluster_KMeans> cluster_KMeans_euclidean_d_dims(ArrayList<Sensor> sensors, int k, int T1, int T2, int kmeans_initialization, int kmeans_expectation_distance, int kmeans_recalcultaion_or_centroids) throws Exception
 	{
 		System.out.println("Starting KMEANS");
 		
-		//1- We generate randomly (uniform) the initial clusters.
-		//ArrayList<Cluster_KMeans> clusters = generate_random_centroids(sensors, k);
+		ArrayList<Cluster_KMeans> clusters = null;
 		
-		double T1 = 3000; //200
-		double T2 = 2000; //50
-		
-		ArrayList<Cluster_KMeans> clusters = generate_centroids_with_canopy(sensors, T1, T2);	
-		k = clusters.size();
-		
-		//2-Until we get no improvement (quality dont improve anymore), do:
+		if(kmeans_initialization == 0) //RANDOM INITIALIZATION
+		{
+			//1- Generate randomly (uniform) the initial clusters.
+			clusters = generate_random_centroids(sensors, k);
+		}
+		else if(kmeans_initialization == 1)
+		{
+			//1- Find k and generate initial clusters with CANOPY. 
+			clusters = generate_centroids_with_canopy(sensors, T1, T2);	
+			k = clusters.size();
+		}
+		else
+		{
+			throw new Exception("KMEANS: INVALID INITIALIZATION PARAMETER.");
+		}
+	
+		//2-Until no further improvements, do:
 		double previous_total_clustering_squared_error = -1; //For initialization.
 		double actual_total_clustering_squared_error = -1;//For initialization.
 		
 		int total_iterations_to_converge = 0;
-		
-		ArrayList<Cluster_KMeans> previous_clusters = new ArrayList<Cluster_KMeans>(); 
-		
-		//while(haveTheCentroidsMembershipChanged(clusters, previous_clusters) || actual_total_clustering_squared_error == -1)
+
 		while(previous_total_clustering_squared_error > actual_total_clustering_squared_error || previous_total_clustering_squared_error == -1)
 		{
 			long initial_time = System.currentTimeMillis();
@@ -56,6 +61,7 @@ public class KMeans_clustering
 				clusters.get(j).reset_membership_vector();
 			}
 			
+			//EXPECTATION PHASE
 			for (int i = 0; i < sensors.size(); i++) //Iterate over all the points.
 			{
 				double current_closest_distance = Double.POSITIVE_INFINITY;
@@ -63,11 +69,19 @@ public class KMeans_clustering
 
 				Sensor current_d_point = sensors.get(i);
 				
+				double actual_distance = -1;
+				
 				for (int j = 0; j < k; j++) //Iterate over all the clusters.
 				{
-					double actual_distance = clusters.get(j).euclidean_distance_to(current_d_point);
-					//double actual_distance = clusters.get(j).Dynamic_Time_Warping_distance_to(current_d_point);
-					
+					if(kmeans_expectation_distance == 0) //EUCLIDEAN
+					{
+						actual_distance = clusters.get(j).euclidean_distance_to(current_d_point);
+					}
+					else if(kmeans_expectation_distance == 1) //DTW
+					{
+						actual_distance = clusters.get(j).Dynamic_Time_Warping_distance_to(current_d_point);
+					}
+
 					if(actual_distance < current_closest_distance)
 					{
 						current_closest_distance = actual_distance;
@@ -77,28 +91,40 @@ public class KMeans_clustering
 				
 				if(current_closest_cluster_index == -1)
 				{
-					System.out.println("STOP");
+					throw new Exception("KMEANS: ERROR IN EXPECTATION PHASE.");
 				}
 				
 				clusters.get(current_closest_cluster_index).addMembership(current_d_point);
 				
 				if((float)i*100/sensors.size() % 5 == 0)
 				{
-					System.out.println("Mapping: "+ (float)i*100/sensors.size()+"%");
+					System.out.println("EXPECTATION PHASE: "+ (float)i*100/sensors.size()+"%");
 				}
 			}
 			
+			//MAXIMIZATION PHASE
 			for (int i = 0; i < k; i++) //Iterate over all the clusters.
 			{
-				clusters.get(i).recalculatePositionOfCentroid(); //Means.
-				//clusters.get(i).recalculatePositionOfCentroid_DBA();
+				if(kmeans_recalcultaion_or_centroids == 0) //ARITHMETIC MEAN
+				{
+					clusters.get(i).recalculatePositionOfCentroid();
+				}
+				else if(kmeans_recalcultaion_or_centroids == 0) //ARITHMETIC MEAN
+				{
+					clusters.get(i).recalculatePositionOfCentroid_DBA();
+				}
+				else
+				{
+					throw new Exception("KMEANS: ERROR IN MAXIMIZATION PHASE.");
+				}
 				
-				System.out.println("Reducing: "+ (float)(i+1)*100/k+"%");
+				System.out.println("MAXIMIZATION PHASE: "+ (float)(i+1)*100/k+"%");
 			}
 			
+			//Finally: Calculate the new total clustering squared error:
 			for (int i = 0; i < k; i++) //Iterate over all the clusters.
 			{
-				actual_total_clustering_squared_error += clusters.get(i).getClusterSquareError(); //Calculate the new total clustering squared error.
+				actual_total_clustering_squared_error += clusters.get(i).getClusterSquareError(); 
 			}
 			
 			long final_time = System.currentTimeMillis();
@@ -109,33 +135,6 @@ public class KMeans_clustering
 		System.out.println("\n -KMeans execution FINISHED for k="+k+".\n -Quality measure (Total Cluster square error (within-cluster variation))= "+Math.sqrt(actual_total_clustering_squared_error)+". Total number of iterations to converge: "+ total_iterations_to_converge);
 		
 		return clusters;
-	}
-
-	
-	private boolean haveTheCentroidsMembershipChanged(ArrayList<Cluster_KMeans> clusters, ArrayList<Cluster_KMeans> previous_clusters)
-	{
-		for (int i = 0; i < clusters.size() && i < previous_clusters.size(); i++)
-		{
-			ArrayList<Sensor> current_actual_cluster = clusters.get(i).getMembership();
-			ArrayList<Sensor> current_previous_cluster = previous_clusters.get(i).getMembership();
-			
-			if(current_actual_cluster.size() != current_previous_cluster.size())
-			{
-				return true;
-			}
-			else
-			{
-				for (int j = 0; j < current_actual_cluster.size(); j++)
-				{
-					if(!current_previous_cluster.contains(current_actual_cluster.get(j)))
-					{
-						return true;
-					}		
-				}
-			}
-		}
-		
-		return false;
 	}
 
 	private ArrayList<Cluster_KMeans> generate_centroids_with_canopy(ArrayList<Sensor> sensors, double T1, double T2)
@@ -154,8 +153,7 @@ public class KMeans_clustering
 			System.out.println("Canopy. Points left to visist: "+ copy_of_data.size());
 			
 			Sensor current_point = copy_of_data.poll();
-			
-			//Cluster_KMeans new_canopy = new Cluster_KMeans("Canopy "+count);
+
 			Cluster_KMeans new_canopy = new Cluster_KMeans(String.valueOf(count), dimensions);
 			new_canopy.addMembership(current_point);
 			
@@ -221,7 +219,7 @@ public class KMeans_clustering
 		{
 			int curr_rand = r.nextInt(sensors.size());
 			
-			//curr_rand = i * 8; //For testing.
+			//curr_rand = i * 8; //Make it determinstic, just for testing.
 			
 			if(!previous_random_ints.contains(curr_rand))
 			{
@@ -243,5 +241,32 @@ public class KMeans_clustering
 		}
 		
 		return random_centroids;
+	}
+	
+	//An optional way to know when to stop the iterations.
+	private boolean haveTheCentroidsMembershipChanged(ArrayList<Cluster_KMeans> clusters, ArrayList<Cluster_KMeans> previous_clusters)
+	{
+		for (int i = 0; i < clusters.size() && i < previous_clusters.size(); i++)
+		{
+			ArrayList<Sensor> current_actual_cluster = clusters.get(i).getMembership();
+			ArrayList<Sensor> current_previous_cluster = previous_clusters.get(i).getMembership();
+			
+			if(current_actual_cluster.size() != current_previous_cluster.size())
+			{
+				return true;
+			}
+			else
+			{
+				for (int j = 0; j < current_actual_cluster.size(); j++)
+				{
+					if(!current_previous_cluster.contains(current_actual_cluster.get(j)))
+					{
+						return true;
+					}		
+				}
+			}
+		}
+		
+		return false;
 	}
 }

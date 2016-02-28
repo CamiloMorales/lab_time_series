@@ -23,8 +23,8 @@ import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.ui.ApplicationFrame;
 
-import edu.unibonn.clustering.dbscan.Cluster_DBScan;
-import edu.unibonn.main.Sensor;
+import edu.unibonn.clustering.model.Cluster_DBScan;
+import edu.unibonn.clustering.model.Sensor;
 
 /**
  * An example of a time series chart.  For the most part, default settings are used, except that

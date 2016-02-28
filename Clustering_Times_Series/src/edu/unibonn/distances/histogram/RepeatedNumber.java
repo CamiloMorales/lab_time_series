@@ -1,4 +1,4 @@
-package edu.unibonn.test;
+package edu.unibonn.distances.histogram;
 
 public class RepeatedNumber implements Comparable<RepeatedNumber>
 {
@@ -40,7 +40,7 @@ public class RepeatedNumber implements Comparable<RepeatedNumber>
 
     public int compareTo(RepeatedNumber n) 
     {
-        return Float.compare(n.number, this.number);
+        return Float.compare(this.number, n.number);
     }
 
 	public void addRepetition()
@@ -52,5 +52,10 @@ public class RepeatedNumber implements Comparable<RepeatedNumber>
 	public String toString()
 	{
 		return this.number+","+this.repetitions;
+	}
+
+	public void normalize()
+	{
+		this.repetitions = this.repetitions/2;
 	}
 }

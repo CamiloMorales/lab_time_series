@@ -9,7 +9,8 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Set;
 
-import edu.unibonn.main.Sensor;
+import edu.unibonn.clustering.model.Cluster_DBScan;
+import edu.unibonn.clustering.model.Sensor;
 
 public class DBScan_clustering
 {

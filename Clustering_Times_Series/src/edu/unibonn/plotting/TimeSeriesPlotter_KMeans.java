@@ -15,6 +15,7 @@ import org.jfree.chart.ChartPanel;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.DateAxis;
+import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.plot.DatasetRenderingOrder;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.StandardXYItemRenderer;
@@ -25,34 +26,61 @@ import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.ui.ApplicationFrame;
 
-import edu.unibonn.clustering.kmeans.Cluster_KMeans;
-import edu.unibonn.main.Sensor;
+import edu.unibonn.clustering.model.Cluster_KMeans;
+import edu.unibonn.clustering.model.Sensor;
 
 public class TimeSeriesPlotter_KMeans extends ApplicationFrame
 {
-    public TimeSeriesPlotter_KMeans(String title, ArrayList<Cluster_KMeans> clusters)
+    public TimeSeriesPlotter_KMeans(String title, ArrayList<Cluster_KMeans> clusters, String pathOutputImages, boolean plot_only_centroid)
     {
     	super(title);
-        final XYDataset dataset = createDataset_clusters(clusters);     
-        final XYDataset dataset_cetroids = createDataset_centroids(clusters); 
-        final JFreeChart chart = createChart(dataset, dataset_cetroids, clusters);
-        final ChartPanel chartPanel = new ChartPanel(chart);
-        
-        chartPanel.setPreferredSize(new java.awt.Dimension(2560, 1600));
-        chartPanel.setMouseZoomable(true, false);
-        setContentPane(chartPanel);
-        
-        try
-        {
-			ChartUtilities.saveChartAsJPEG(new File("./jpgs/"+title+".jpg"), chart, 65500, 1200);
-		} 
-        catch (Exception e)
-        {
-			e.printStackTrace();
-		}
+    	
+    	if(!plot_only_centroid)
+    	{
+    		final XYDataset dataset = createDataset_clusters(clusters);     
+            final XYDataset dataset_cetroids = createDataset_centroids(clusters); 
+            final JFreeChart chart = createChart(dataset, dataset_cetroids, clusters);
+            final ChartPanel chartPanel = new ChartPanel(chart);
+            
+            chartPanel.setPreferredSize(new java.awt.Dimension(2560, 1600));
+            chartPanel.setMouseZoomable(true, false);
+            setContentPane(chartPanel);
+            
+            File outputPath = new File(pathOutputImages);
+            
+            try
+            {
+    			ChartUtilities.saveChartAsJPEG(new File(outputPath.getAbsolutePath()+File.separator+title+".jpg"), chart, 1920, 1200);
+    		} 
+            catch (Exception e)
+            {
+    			e.printStackTrace();
+    		}
+    	}
+    	else
+    	{
+            final XYDataset dataset_cetroids = createDataset_centroids(clusters); 
+            final JFreeChart chart = createChartOnlyCentroids(dataset_cetroids);
+            final ChartPanel chartPanel = new ChartPanel(chart);
+            
+            chartPanel.setPreferredSize(new java.awt.Dimension(2560, 1600));
+            chartPanel.setMouseZoomable(true, false);
+            setContentPane(chartPanel);
+            
+            File outputPath = new File(pathOutputImages);
+            
+            try
+            {
+    			ChartUtilities.saveChartAsJPEG(new File(outputPath.getAbsolutePath()+File.separator+title+".jpg"), chart, 1920, 1200);
+    		} 
+            catch (Exception e)
+            {
+    			e.printStackTrace();
+    		}
+    	}
 	}
 
-    private XYDataset createDataset_centroids(ArrayList<Cluster_KMeans> clusters)
+	private XYDataset createDataset_centroids(ArrayList<Cluster_KMeans> clusters)
 	{
 		final TimeSeriesCollection dataset = new TimeSeriesCollection();
 		
@@ -163,8 +191,8 @@ public class TimeSeriesPlotter_KMeans extends ApplicationFrame
         final DateAxis axis = (DateAxis) plot.getDomainAxis();    
         axis.setDateFormatOverride(new SimpleDateFormat("HH:mm"));
 
-        //final ValueAxis axis_y = plot.getRangeAxis();
-        //axis_y.setRange(0, 20);
+        final ValueAxis axis_y = plot.getRangeAxis();
+        axis_y.setRange(0, 110);
         
         plot.setDataset(1,dataset_centroids);
         plot.setRenderer(1, new StandardXYItemRenderer());
@@ -180,6 +208,58 @@ public class TimeSeriesPlotter_KMeans extends ApplicationFrame
         
         return chart;
     }  
+    
+    private JFreeChart createChartOnlyCentroids(XYDataset dataset_cetroids)
+    {
+
+    	final JFreeChart chart = ChartFactory.createTimeSeriesChart(
+            "Sensors",
+            "Time", "Erlang",
+            dataset_cetroids,
+            false, //t
+            true, //t
+            false //f
+        );
+        
+        ChartUtilities.applyCurrentTheme(chart);
+        
+        //chart.setBackgroundPaint(Color.white);
+
+//        final StandardLegend sl = (StandardLegend) chart.getLegend();
+//        sl.setDisplaySeriesShapes(true);
+
+        final XYPlot plot = chart.getXYPlot();
+        plot.setBackgroundPaint(Color.WHITE);
+        plot.setDomainGridlinePaint(Color.white);
+        plot.setRangeGridlinePaint(Color.white);
+//        plot.setAxisOffset(new Spacer(Spacer.ABSOLUTE, 5.0, 5.0, 5.0, 5.0));
+        plot.setDomainCrosshairVisible(true);
+        plot.setRangeCrosshairVisible(true);
+        
+        final XYItemRenderer renderer = plot.getRenderer();
+        
+        if (renderer instanceof StandardXYItemRenderer) 
+        {
+            final StandardXYItemRenderer rr = (StandardXYItemRenderer) renderer;
+            //rr.setPlotShapes(true);
+            rr.setShapesFilled(true);
+            rr.setItemLabelsVisible(true);
+        }
+        
+        final DateAxis axis = (DateAxis) plot.getDomainAxis();    
+        axis.setDateFormatOverride(new SimpleDateFormat("HH:mm"));
+
+        final ValueAxis axis_y = plot.getRangeAxis();
+        axis_y.setRange(0, 110);
+
+        renderer.setSeriesPaint(0, Color.BLACK);
+        renderer.setSeriesStroke(0, new BasicStroke(3.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND,1.0f, new float[] {10.0f, 6.0f}, 0.0f));
+
+        plot.setDatasetRenderingOrder(DatasetRenderingOrder.FORWARD);
+        
+        return chart;
+    
+	}
     
     private Paint getColor(int color_number) 
     {

@@ -1,9 +1,7 @@
-package edu.unibonn.clustering.kmeans;
+package edu.unibonn.clustering.model;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-
-import edu.unibonn.main.Sensor;
 
 public class Cluster_KMeans
 {

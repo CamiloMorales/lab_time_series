@@ -4,7 +4,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.util.Random;
 
-import edu.unibonn.main.Sensor.Cell_type;
+import edu.unibonn.clustering.model.Sensor.Cell_type;
 
 public class SampleGenerator
 {

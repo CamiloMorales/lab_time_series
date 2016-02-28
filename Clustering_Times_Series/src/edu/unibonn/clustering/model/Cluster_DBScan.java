@@ -1,9 +1,10 @@
-package edu.unibonn.clustering.dbscan;
+package edu.unibonn.clustering.model;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+
+import edu.unibonn.clustering.dbscan.DBScan_clustering;
 import edu.unibonn.clustering.dbscan.DBScan_clustering.Type_of_cluster;
-import edu.unibonn.main.Sensor;
 
 public class Cluster_DBScan
 {

@@ -75,9 +75,9 @@ import org.jfree.ui.RefineryUtilities;
 import org.jfree.util.Log;
 import org.jfree.util.PrintStreamLogTarget;
 
-import edu.unibonn.clustering.dbscan.Cluster_DBScan;
-import edu.unibonn.clustering.kmeans.Cluster_KMeans;
-import edu.unibonn.main.Sensor;
+import edu.unibonn.clustering.model.Cluster_DBScan;
+import edu.unibonn.clustering.model.Cluster_KMeans;
+import edu.unibonn.clustering.model.Sensor;
 
 public class TimeSeriesPlotter_Sensors extends ApplicationFrame
 {
